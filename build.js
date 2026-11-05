@@ -1094,10 +1094,16 @@ const DROP_HASHES = ${JSON.stringify(DROP_HASHES)};
     const dropDate = first.dropDate || "";
 
     const cardsHTML = products.map(function(p) {
-      const imgSrc = p.dropImage ? '${root}assets/drops/' + p.dropImage : '';
+      const isExternal = p.dropImage && (p.dropImage.startsWith('http://') || p.dropImage.startsWith('https://') || p.dropImage.startsWith('data:'));
+      const imgSrc = p.dropImage ? (isExternal ? p.dropImage : '${root}assets/drops/' + p.dropImage) : '';
+      const defaultColor = (p.colors && p.colors[0] && p.colors[0].shirt) || '#0d0d0b';
+      const fallbackArt = window.BSS_ART
+        ? window.BSS_ART.shirtSVG(defaultColor, { hoodie: p.hoodie, mark: p.mark })
+        : '';
       const imgHTML = imgSrc
-        ? '<img src="' + imgSrc + '" alt="' + p.name + '" style="width:100%;height:100%;object-fit:cover;">'
-        : (window.BSS_ART ? window.BSS_ART.shirtSVG((p.colors && p.colors[0] && p.colors[0].shirt) || '#0d0d0b', { hoodie: p.hoodie, mark: p.mark }) : '');
+        ? '<img src="' + imgSrc + '" alt="' + p.name + '" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display=\'none\';if(this.nextElementSibling)this.nextElementSibling.style.display=\'flex\';">' +
+          '<div class="shirt fallback-art" style="display:none;position:absolute;inset:0;width:100%;height:100%;align-items:center;justify-content:center;padding:12px;box-sizing:border-box;">' + fallbackArt + '</div>'
+        : '<div class="shirt" style="position:absolute;inset:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;padding:12px;box-sizing:border-box;">' + fallbackArt + '</div>';
 
       return '<div class="card" data-product-card data-id="' + p.id + '">' +
         '<div class="card-media" style="position:relative;aspect-ratio:4/5;overflow:hidden;background:#161613;">' +
