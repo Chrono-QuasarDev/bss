@@ -1,6 +1,7 @@
 dist/
 drop-codes.json
 assets/drops/*
+.wrangler/
 
 # ------------------------------------------
 # OPERATING SYSTEM JUNK

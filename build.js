@@ -71,7 +71,37 @@ function encryptDropData(products, code) {
   };
 }
 
-// Read drop codes from environment variable (for Cloudflare Pages / CI) or local drop-codes.json
+// ----------------------------------------------------------------------------
+// Load .env file (zero-dependency, native Node.js)
+// ----------------------------------------------------------------------------
+const envFile = path.join(ROOT_DIR, ".env");
+if (fs.existsSync(envFile)) {
+  try {
+    const lines = fs.readFileSync(envFile, "utf8").split(/\r?\n/);
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith("#")) continue;
+      const eqIdx = trimmed.indexOf("=");
+      if (eqIdx > 0) {
+        const key = trimmed.slice(0, eqIdx).trim();
+        let val = trimmed.slice(eqIdx + 1).trim();
+        if (
+          (val.startsWith('"') && val.endsWith('"')) ||
+          (val.startsWith("'") && val.endsWith("'"))
+        ) {
+          val = val.slice(1, -1);
+        }
+        if (!process.env[key]) {
+          process.env[key] = val;
+        }
+      }
+    }
+  } catch (e) {
+    console.warn("Warning: Could not read .env file:", e.message);
+  }
+}
+
+// Read drop codes from environment variable (for Cloudflare Pages / CI / .env) or local drop-codes.json
 let DROP_CODES_MAP = {};
 if (process.env.DROP_CODES) {
   try {
@@ -89,7 +119,7 @@ if (process.env.DROP_CODES) {
     }
   } else {
     console.warn(
-      "Warning: drop-codes.json not found and DROP_CODES env var not set. Premium drops won't be available.",
+      "Warning: Neither .env, DROP_CODES env var, nor drop-codes.json was found. Premium drops won't be available.",
     );
   }
 }
