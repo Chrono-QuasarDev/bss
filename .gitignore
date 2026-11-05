@@ -1,6 +1,4 @@
 dist/
-drop-codes.json
-assets/drops/*
 .wrangler/
 
 # ------------------------------------------
