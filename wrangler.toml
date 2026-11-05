@@ -1,0 +1,10 @@
+# Cloudflare Pages project configuration.
+# Static site from dist/, plus Pages Functions from functions/.
+# Secrets are NOT stored here. Set them in the Pages dashboard, or with:
+#   npx wrangler pages secret put BSS_ACCESS_SECRET --project-name bss
+#   npx wrangler pages secret put DROP_CONTENT_KEY  --project-name bss
+#   npx wrangler pages secret put DROP_REVOKED      --project-name bss   (optional, e.g. 0042,0051)
+
+name = "bss"
+pages_build_output_dir = "dist"
+compatibility_date = "2025-09-01"

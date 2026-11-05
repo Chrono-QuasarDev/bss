@@ -40,3 +40,12 @@ package*.json
 *.log
 tmp/
 temp/
+
+# ------------------------------------------
+# PRIVATE DROP DATA (never commit)
+# ------------------------------------------
+private/
+drop-codes.json
+
+# Local secrets (never commit)
+.env

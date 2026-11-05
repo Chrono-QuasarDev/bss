@@ -1,174 +1,41 @@
 // ============================================================================
-// HOW TO CREATE A NEW DROP:
+// EARLY-ACCESS DROPS (summary; see README.md for the full process)
 //
-// 1. Add products to products.js with premium: true, a dropId,
-//    dropDate, dropPrice, dropName, and a random dropImage filename.
-//
-// 2. Generate a random image filename:
-//    node -e "console.log(require('crypto').randomBytes(8).toString('hex') + '.webp')"
-//    Save your product photo as assets/drops/<that-filename>
-//
-// 3. Add the drop code to drop-codes.json:
-//    { "your-drop-id": "YOURCODE" }
-//    Use 8+ uppercase letters/numbers. Never share this file.
-//    IMPORTANT: drop-codes.json is in .gitignore and must NEVER be pushed to GitHub.
-//
-// 4. Rebuild: node build.js
-//
-// 5. Deploy (push to GitHub → Cloudflare Pages auto-deploys)
-//
-// 6. When a customer pays, send them the code on WhatsApp:
-//    "Your early access code is YOURCODE. Go to bss.gh/drop"
-//
-// 7. On drop day, change the dropDate to today or earlier, rebuild,
-//    and the products will appear on the public shop automatically.
-//
-// SECURITY NOTES:
-// - drop-codes.json is in .gitignore and never pushed to GitHub
-// - Product data is encrypted with AES-256-GCM (same as HTTPS)
-// - Image filenames are random and unguessable
-// - The drop page is not linked from the main site
-// - Codes expire after 7 days on the customer's device
-// - For stronger protection, add Cloudflare Access (free for 50
-//   users) to the /drop and /assets/drops/ paths. See:
-//   https://developers.cloudflare.com/cloudflare-one/applications/
-//
-// RANDOM IMAGE FILENAMES FOR DROPS:
-// To generate a random image filename, run:
-//   node -e "console.log(require('crypto').randomBytes(8).toString('hex') + '.webp')"
-// Example output: a3f8c2d9e1b4f7a6.webp
-// Save the image as assets/drops/<that-filename> and use the
-// filename as the dropImage value in products.js.
+// - Drop products are NOT in products.js. They are packed into src/drop-data/bundle.enc
+//   (AES-256-GCM, key kept as a Pages secret). The build reads only the public
+//   src/drop-teaser.json to show the teaser.
+// - Buyers pay on WhatsApp. The owner issues a code with tools/issue-access.mjs.
+// - The drop page asks the server (functions/api/drop/*) for the products.
+//   The server returns them only with a valid, signed, unexpired cookie.
+// - On drop day the teaser disappears automatically. To make products public,
+//   add them to products.js and rebuild.
 // ============================================================================
 
 // Builds the B.S.S multipage storefront into dist/.
 // Zero dependencies: run with `node build.js`.
 const fs = require("fs");
 const path = require("path");
-const crypto = require("crypto");
 
 const ROOT_DIR = __dirname;
 const SRC = path.join(ROOT_DIR, "src");
 const OUT = path.join(ROOT_DIR, "dist");
 const ART = require(path.join(SRC, "js", "art.js"));
 const { PRODUCTS, BY_ID } = require(path.join(SRC, "js", "products.js"));
-const { isProductPublic } = require(path.join(SRC, "js", "shared.js"));
-
-/* ---------- AES-256-GCM Encryption for Premium Drops ---------- */
-function encryptDropData(products, code) {
-  const key = crypto.createHash("sha256").update(code).digest();
-  const iv = crypto.randomBytes(12);
-  const cipher = crypto.createCipheriv("aes-256-gcm", key, iv);
-  const encrypted = Buffer.concat([
-    cipher.update(JSON.stringify(products), "utf8"),
-    cipher.final(),
-  ]);
-  const tag = cipher.getAuthTag();
-  return {
-    iv: iv.toString("base64"),
-    data: encrypted.toString("base64"),
-    tag: tag.toString("base64"),
-  };
-}
-
-// ----------------------------------------------------------------------------
-// Load .env file (zero-dependency, native Node.js)
-// ----------------------------------------------------------------------------
-const envFile = path.join(ROOT_DIR, ".env");
-if (fs.existsSync(envFile)) {
-  try {
-    const lines = fs.readFileSync(envFile, "utf8").split(/\r?\n/);
-    for (const line of lines) {
-      const trimmed = line.trim();
-      if (!trimmed || trimmed.startsWith("#")) continue;
-      const eqIdx = trimmed.indexOf("=");
-      if (eqIdx > 0) {
-        const key = trimmed.slice(0, eqIdx).trim();
-        let val = trimmed.slice(eqIdx + 1).trim();
-        if (
-          (val.startsWith('"') && val.endsWith('"')) ||
-          (val.startsWith("'") && val.endsWith("'"))
-        ) {
-          val = val.slice(1, -1);
-        }
-        if (!process.env[key]) {
-          process.env[key] = val;
-        }
-      }
-    }
-  } catch (e) {
-    console.warn("Warning: Could not read .env file:", e.message);
-  }
-}
-
-// Read drop codes from environment variable (for Cloudflare Pages / CI / .env) or local drop-codes.json
-let DROP_CODES_MAP = {};
-if (process.env.DROP_CODES) {
-  try {
-    DROP_CODES_MAP = JSON.parse(process.env.DROP_CODES);
-  } catch (e) {
-    console.warn("Warning: Could not parse DROP_CODES env var:", e.message);
-  }
-} else {
-  const dropCodesFile = path.join(ROOT_DIR, "drop-codes.json");
-  if (fs.existsSync(dropCodesFile)) {
-    try {
-      DROP_CODES_MAP = JSON.parse(fs.readFileSync(dropCodesFile, "utf8"));
-    } catch (e) {
-      console.warn("Warning: Could not parse drop-codes.json:", e.message);
-    }
-  } else {
-    console.warn(
-      "Warning: Neither .env, DROP_CODES env var, nor drop-codes.json was found. Premium drops won't be available.",
-    );
-  }
-}
-
-const DROP_DATA = {};
-const DROP_HASHES = {};
-
-for (const [dropId, code] of Object.entries(DROP_CODES_MAP)) {
-  const codeTrimmed = String(code).trim().toUpperCase();
-  const hash = crypto.createHash("sha256").update(codeTrimmed).digest("hex");
-  DROP_HASHES[hash] = dropId;
-
-  // Filter products for this drop (premium products with future drop date)
-  const dropProducts = PRODUCTS.filter(
-    (p) =>
-      p.dropId === dropId &&
-      p.premium &&
-      (!p.dropDate || new Date(p.dropDate) > new Date()),
-  );
-  if (dropProducts.length > 0) {
-    const allowedKeys = [
-      "id",
-      "slug",
-      "name",
-      "price",
-      "colors",
-      "sizes",
-      "soldOut",
-      "desc",
-      "details",
-      "dropImage",
-      "dropName",
-      "dropDate",
-      "dropPrice",
-    ];
-    const cleaned = dropProducts.map((p) => {
-      const item = {};
-      for (const k of allowedKeys) {
-        if (p[k] !== undefined) item[k] = p[k];
-      }
-      return item;
-    });
-    DROP_DATA[dropId] = encryptDropData(cleaned, codeTrimmed);
-  }
-}
 
 const WA_NUMBER = "233206764888";
 const WA_DISPLAY = "+233 20 676 4888";
 const WA_LINK = "https://wa.me/" + WA_NUMBER;
+
+/* ---------- Drop teaser (public: name, date, price only) ---------- */
+// The full catalog is encrypted in src/drop-data/bundle.enc and opened only by the server.
+const DROP_FILE = path.join(ROOT_DIR, "src", "drop-teaser.json");
+const DROP = fs.existsSync(DROP_FILE)
+  ? JSON.parse(fs.readFileSync(DROP_FILE, "utf8"))
+  : null;
+
+function dropIsUpcoming() {
+  return !!DROP && Date.now() < Date.parse(DROP.date + "T00:00:00Z");
+}
 
 function cedi(n) {
   return "GHS " + Number(n).toLocaleString("en-GH");
@@ -363,42 +230,20 @@ function formatMonthDay(isoDate) {
 }
 
 function renderUpcomingDropTeasers(root) {
-  const upcomingMap = new Map();
-  for (const p of PRODUCTS) {
-    if (p.premium && p.dropDate && new Date(p.dropDate) > new Date()) {
-      if (!upcomingMap.has(p.dropId)) {
-        upcomingMap.set(p.dropId, {
-          dropId: p.dropId,
-          dropName: p.dropName || "Signal Collection",
-          dropDate: p.dropDate,
-          dropPrice: p.dropPrice || 20,
-        });
-      }
-    }
-  }
-  const drops = Array.from(upcomingMap.values());
-  if (!drops.length) return "";
-
-  return (
-    `<div class="drop-teaser-wrap">` +
-    drops
-      .map((drop) => {
-        const msg = `Hi B.S.S, I want early access to the ${drop.dropName}. I'm ready to pay.`;
-        const dateFormatted = formatMonthDay(drop.dropDate);
-        return `
+  if (!dropIsUpcoming()) return "";
+  const msg = `Hi B.S.S, I want early access to the ${DROP.name}.`;
+  return `
+<div class="drop-teaser-wrap">
   <div class="drop-teaser card" style="border: 2px solid var(--signal); background: var(--ink-2); padding: 36px 32px; display: flex; flex-direction: column; gap: 14px;">
     <div class="crumbs-line" style="color:var(--signal);font-weight:600;letter-spacing:.2em;text-transform:uppercase;">Early Access</div>
-    <h2 class="teaser-title" style="font-family:var(--display);font-size:clamp(26px,4vw,40px);line-height:1.1;text-transform:uppercase;">${drop.dropName} — Dropping ${dateFormatted}</h2>
-    <div class="teaser-price" style="font-size:16px;color:var(--paper-dim);">Early access: ${cedi(drop.dropPrice)}</div>
+    <h2 class="teaser-title" style="font-family:var(--display);font-size:clamp(26px,4vw,40px);line-height:1.1;text-transform:uppercase;">${DROP.name} — Dropping ${formatMonthDay(DROP.date)}</h2>
+    <div class="teaser-price" style="font-size:16px;color:var(--paper-dim);">Early access fee: ${cedi(DROP.price)} (credited to your order)</div>
     <div class="teaser-actions" style="display:flex;align-items:center;gap:18px;margin-top:8px;flex-wrap:wrap;">
-      <a class="btn btn-primary" href="${waText(msg)}" target="_blank" rel="noopener">Get Early Access</a>
+      <a class="btn btn-primary" href="${waText(msg)}" target="_blank" rel="noopener">Get early access</a>
       <a class="link-btn" href="${root}drop.html" style="font-size:14px;">Have a code? Unlock here →</a>
     </div>
-  </div>`;
-      })
-      .join("") +
-    `</div>`
-  );
+  </div>
+</div>`;
 }
 
 function pageHero(kicker, title, lead, extra = "") {
@@ -416,7 +261,7 @@ function pageHero(kicker, title, lead, extra = "") {
 const pages = {};
 
 pages["index.html"] = (root = "") => {
-  const visible = PRODUCTS.filter(isProductPublic);
+  const visible = PRODUCTS;
   const body = `
 <section class="hero" style="padding:0">
   <img class="hero-img" src="${root}assets/hero.jpg" alt="A black heavyweight tee hanging in a dim print studio">
@@ -500,7 +345,7 @@ pages["index.html"] = (root = "") => {
 };
 
 pages["shop.html"] = (root = "") => {
-  const visible = PRODUCTS.filter(isProductPublic);
+  const visible = PRODUCTS;
   const teaser = renderUpcomingDropTeasers(root);
   const body = `
 ${pageHero("The Drop · " + visible.length + " pieces", "Shop", "Every piece is screen-printed to order from a limited run. Filter by type or sort by price.")}
@@ -530,7 +375,7 @@ function productPage(p) {
   return (root = "../") => {
     const c = p.colors[0];
     const others = PRODUCTS.filter(
-      (x) => x.id !== p.id && isProductPublic(x),
+      (x) => x.id !== p.id,
     ).slice(0, 3);
     const body = `
 <main class="pdp" data-product-page="${p.id}">
@@ -990,235 +835,57 @@ pages["404.html"] = (root = "") => {
 
 pages["drop.html"] = (root = "") => {
   const body = `
-<main class="drop-page-wrap">
-  <section class="center-page" id="drop-gate" style="min-height:70vh;padding:120px 20px 80px;">
-    <div class="box" style="max-width:480px;width:100%;margin:0 auto;text-align:center;">
-      <h1 class="h1" style="font-family:var(--display);font-size:clamp(40px,7vw,72px);line-height:.95;text-transform:uppercase;margin-bottom:16px;">Early Access</h1>
-      <p class="muted" style="margin-bottom:32px;font-size:16px;">Enter the drop code you received on WhatsApp.</p>
-      <form class="form" id="drop-form" novalidate style="text-align:left;">
-        <div class="field">
-          <input
-            id="drop-code"
-            name="code"
-            type="text"
-            inputmode="text"
-            autocomplete="off"
-            autocapitalize="characters"
-            placeholder="ENTER CODE"
-            style="text-transform:uppercase;letter-spacing:.15em;text-align:center;font-weight:700;"
-            required
-          >
-          <div id="drop-error" style="display:none;color:var(--signal);font-size:13px;margin-top:6px;">Invalid code.</div>
-        </div>
-        <button class="btn btn-primary" id="drop-submit" type="submit" style="width:100%;justify-content:center;margin-top:8px;">Unlock</button>
-      </form>
+${pageHero("Early access", DROP ? DROP.name : "Early access", "Paid buyers with an access code can see and reserve the collection here before it goes public.")}
+<section class="section-tight" id="drop-gate">
+  <div class="wrap" style="max-width:560px">
+    <h2 class="h3" style="margin-bottom:12px">Enter your access code</h2>
+    <p class="muted" style="margin-bottom:28px">Your code arrived on WhatsApp after your early-access payment. It starts with BSS.</p>
+    <form class="form" id="drop-form" novalidate>
+      <div class="field">
+        <label for="drop-code">Access code</label>
+        <input id="drop-code" name="code" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="BSS-0000-XXXX-XXXX-XXXX-XXXX">
+        <span class="err">That code isn't valid. Check it and try again.</span>
+      </div>
+      <div><button class="btn btn-primary" type="submit" id="drop-submit">Unlock early access</button></div>
+    </form>
+    <p class="muted" style="font-size:13px;margin-top:22px">Haven't paid yet? <a data-wa-text="Hi B.S.S, I'd like early access to the ${DROP ? DROP.name : "next drop"}." style="text-decoration:underline">Message us on WhatsApp</a>.</p>
+  </div>
+</section>
+<section class="section-tight" id="drop-content" hidden>
+  <div class="wrap">
+    <div class="section-head">
+      <div>
+        <span class="label">Early access · your ref <span id="drop-ref"></span></span>
+        <h2 class="h2">Reserve before the drop</h2>
+      </div>
+      <p class="muted" id="drop-date-note"></p>
     </div>
-  </section>
-
-  <div id="drop-content" style="display:none;"></div>
-</main>`;
-
-  const script = `
-<script>
-const DROP_DATA = ${JSON.stringify(DROP_DATA)};
-const DROP_HASHES = ${JSON.stringify(DROP_HASHES)};
-
-(function() {
-  async function decryptDrop(encrypted, code) {
-    const keyData = await crypto.subtle.digest(
-      'SHA-256', new TextEncoder().encode(code.trim().toUpperCase())
-    );
-    const key = await crypto.subtle.importKey(
-      'raw', keyData, 'AES-GCM', false, ['decrypt']
-    );
-    const iv = Uint8Array.from(atob(encrypted.iv), c => c.charCodeAt(0));
-    const data = Uint8Array.from(atob(encrypted.data), c => c.charCodeAt(0));
-    const tag = Uint8Array.from(atob(encrypted.tag), c => c.charCodeAt(0));
-    const combined = new Uint8Array(data.length + tag.length);
-    combined.set(data);
-    combined.set(tag, data.length);
-    try {
-      const decrypted = await crypto.subtle.decrypt(
-        { name: 'AES-GCM', iv }, key, combined
-      );
-      return JSON.parse(new TextDecoder().decode(decrypted));
-    } catch (e) {
-      return null; // decryption failed = wrong code
-    }
-  }
-
-  const gate = document.getElementById('drop-gate');
-  const content = document.getElementById('drop-content');
-  const form = document.getElementById('drop-form');
-  const input = document.getElementById('drop-code');
-  const errorEl = document.getElementById('drop-error');
-
-  function showError(msg) {
-    if (errorEl) {
-      errorEl.textContent = msg || "Invalid code.";
-      errorEl.style.display = "block";
-    }
-  }
-
-  if (input) {
-    input.addEventListener('input', function() {
-      this.value = this.value.replace(/\\s+/g, '').toUpperCase();
-      if (errorEl) errorEl.style.display = 'none';
-    });
-  }
-
-  function renderDropProducts(products) {
-    if (gate) gate.style.display = 'none';
-    if (!content) return;
-    content.style.display = 'block';
-
-    // Register into client BSS_PRODUCTS so bag drawer / checkout knows about them
-    if (window.BSS_PRODUCTS) {
-      products.forEach(function(p) {
-        if (!window.BSS_PRODUCTS.BY_ID[p.id]) {
-          window.BSS_PRODUCTS.PRODUCTS.push(p);
-          window.BSS_PRODUCTS.BY_ID[p.id] = p;
-        }
-      });
-    }
-    try {
-      if (window.BSS_STORAGE && window.BSS_STORAGE.set) {
-        window.BSS_STORAGE.set('bss-drop-unlocked-products', products);
-      } else {
-        localStorage.setItem('bss-drop-unlocked-products', JSON.stringify(products));
-      }
-    } catch (e) {}
-
-    const first = products[0] || {};
-    const dropName = first.dropName || "Signal Collection";
-    const dropDate = first.dropDate || "";
-
-    const cardsHTML = products.map(function(p) {
-      const isExternal = p.dropImage && (p.dropImage.startsWith('http://') || p.dropImage.startsWith('https://') || p.dropImage.startsWith('data:'));
-      const imgSrc = p.dropImage ? (isExternal ? p.dropImage : '${root}assets/drops/' + p.dropImage) : '';
-      const defaultColor = (p.colors && p.colors[0] && p.colors[0].shirt) || '#0d0d0b';
-      const fallbackArt = window.BSS_ART
-        ? window.BSS_ART.shirtSVG(defaultColor, { hoodie: p.hoodie, mark: p.mark })
-        : '';
-      const imgHTML = imgSrc
-        ? '<img src="' + imgSrc + '" alt="' + p.name + '" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display=\'none\';if(this.nextElementSibling)this.nextElementSibling.style.display=\'flex\';">' +
-          '<div class="shirt fallback-art" style="display:none;position:absolute;inset:0;width:100%;height:100%;align-items:center;justify-content:center;padding:12px;box-sizing:border-box;">' + fallbackArt + '</div>'
-        : '<div class="shirt" style="position:absolute;inset:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;padding:12px;box-sizing:border-box;">' + fallbackArt + '</div>';
-
-      return '<div class="card" data-product-card data-id="' + p.id + '">' +
-        '<div class="card-media" style="position:relative;aspect-ratio:4/5;overflow:hidden;background:#161613;">' +
-          imgHTML +
-          '<span class="card-tag signal">Early Access</span>' +
-        '</div>' +
-        '<div class="card-meta">' +
-          '<span class="card-name">' + p.name + '</span>' +
-          '<span class="card-price">' + (window.BSS ? window.BSS.cedi(p.price) : 'GHS ' + p.price) + '</span>' +
-        '</div>' +
-        (p.desc ? '<p class="muted" style="font-size:14px;margin-top:6px;line-height:1.4;">' + p.desc + '</p>' : '') +
-        '<div class="card-colors" style="margin-top:8px;">' +
-          (p.colors || []).map(function(col) {
-            return '<span class="swatch" title="' + col.name + '" style="background:' + col.hex + '"></span>';
-          }).join('') +
-        '</div>' +
-        '<div style="margin-top:14px;">' +
-          '<button type="button" class="btn btn-primary" style="width:100%;justify-content:center;" data-drop-add="' + p.id + '">Add to Bag</button>' +
-        '</div>' +
-      '</div>';
-    }).join('');
-
-    content.innerHTML = '<section class="page-hero" style="text-align:center;padding:160px 28px 60px;">' +
-      '<div class="wrap">' +
-        '<div class="crumbs-line" style="margin-bottom:14px;"><span style="color:var(--signal);font-weight:600;letter-spacing:.14em;">You have early access. This collection goes public on ' + dropDate + '.</span></div>' +
-        '<div style="margin-bottom:18px;"><span class="badge" style="display:inline-block;padding:6px 14px;border:1px solid var(--signal);color:var(--signal);font-size:12px;letter-spacing:.14em;text-transform:uppercase;border-radius:999px;">Drops on ' + dropDate + '</span></div>' +
-        '<h1 class="h1" style="font-family:var(--display);font-size:clamp(48px,8vw,110px);line-height:.9;text-transform:uppercase;letter-spacing:-.02em;">' + dropName + '</h1>' +
-      '</div>' +
-    '</section>' +
-    '<div class="wrap" style="padding:48px 28px 120px;">' +
-      '<div class="shop-grid" style="padding:0;">' + cardsHTML + '</div>' +
-    '</div>';
-
-    content.querySelectorAll('[data-drop-add]').forEach(function(btn) {
-      btn.addEventListener('click', function(e) {
-        e.preventDefault();
-        const id = btn.getAttribute('data-drop-add');
-        const p = (window.BSS_PRODUCTS && window.BSS_PRODUCTS.BY_ID[id]) || products.find(function(x) { return x.id === id; });
-        if (p && window.BSS && window.BSS.addToBag) {
-          const defaultSize = (p.sizes && p.sizes.find(function(s) { return !p.soldOut || !p.soldOut.includes(s); })) || (p.sizes && p.sizes[0]) || 'M';
-          const defaultColor = (p.colors && p.colors[0] && p.colors[0].name) || 'Default';
-          window.BSS.addToBag({
-            id: p.id,
-            color: defaultColor,
-            size: defaultSize,
-            qty: 1
-          });
-        }
-      });
-    });
-  }
-
-  // 4. On page load, check storage for a valid unlock
-  try {
-    const unlock = window.BSS_STORAGE && window.BSS_STORAGE.get
-      ? window.BSS_STORAGE.get('bss-drop-unlock', null)
-      : JSON.parse(localStorage.getItem('bss-drop-unlock') || 'null');
-    if (unlock && unlock.expires > Date.now() && unlock.dropId && unlock.code && DROP_DATA[unlock.dropId]) {
-      decryptDrop(DROP_DATA[unlock.dropId], unlock.code).then(function(products) {
-        if (products) {
-          renderDropProducts(products);
-        }
-      });
-    }
-  } catch (e) {}
-
-  if (form) {
-    form.addEventListener('submit', async function(e) {
-      e.preventDefault();
-      const code = (input.value || "").trim().toUpperCase();
-      if (!code) return;
-
-      const encoder = new TextEncoder();
-      const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(code));
-      const hash = Array.from(new Uint8Array(hashBuffer)).map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
-
-      const dropId = DROP_HASHES[hash];
-      if (!dropId || !DROP_DATA[dropId]) {
-        showError("Invalid code.");
-        return;
-      }
-
-      const products = await decryptDrop(DROP_DATA[dropId], code);
-      if (!products) {
-        showError("Invalid code.");
-        return;
-      }
-
-      const expires = Date.now() + 7 * 24 * 60 * 60 * 1000;
-      try {
-        if (window.BSS_STORAGE && window.BSS_STORAGE.set) {
-          window.BSS_STORAGE.set('bss-drop-unlock', { dropId: dropId, code: code, expires: expires });
-          window.BSS_STORAGE.set('bss-drop-code-plaintext', code);
-        } else {
-          localStorage.setItem('bss-drop-unlock', JSON.stringify({ dropId: dropId, code: code, expires: expires }));
-          localStorage.setItem('bss-drop-code-plaintext', code);
-        }
-      } catch (e) {}
-
-      renderDropProducts(products);
-    });
-  }
-})();
-</script>`;
-
+    <div class="grid" id="drop-grid"></div>
+  </div>
+</section>
+<section class="section-tight" id="drop-closed" hidden>
+  <div class="wrap prose">
+    <h2 class="h3" style="margin-bottom:14px">Early access has ended</h2>
+    <p class="muted">The collection is now open to everyone.</p>
+    <p style="margin-top:22px"><a class="btn btn-primary" id="drop-closed-link" href="shop.html">Shop the collection</a></p>
+  </div>
+</section>
+<section class="section-tight" id="drop-unavailable" hidden>
+  <div class="wrap prose">
+    <h2 class="h3" style="margin-bottom:14px">Not open yet</h2>
+    <p class="muted">Early access isn't available right now. Check back soon, or message us on WhatsApp.</p>
+  </div>
+</section>`;
   return layout({
-    title: "Early Access · B.S.S",
+    title: "Early access · B.S.S",
+    desc: "Early access for B.S.S buyers.",
     root,
     body,
     noindex: true,
-    script,
+    script: `<script src="${root}js/drop.js"></script>`,
   });
 };
 
-/* ---------- Write output ---------- */
 function write(rel, html) {
   const file = path.join(OUT, rel);
   fs.mkdirSync(path.dirname(file), { recursive: true });
@@ -1249,13 +916,14 @@ for (const [rel, render] of Object.entries(pages)) {
   write(rel, render("../"));
 }
 // Product pages (only for public products)
-const publicProducts = PRODUCTS.filter(isProductPublic);
+const publicProducts = PRODUCTS;
 for (const p of publicProducts)
   write(`product/${p.slug}.html`, productPage(p)("../"));
 
 // Assets and scripts
 copyDir(path.join(ROOT_DIR, "assets"), path.join(OUT, "assets"));
 fs.copyFileSync(path.join(SRC, "styles.css"), path.join(OUT, "styles.css"));
+if (fs.existsSync(path.join(SRC, "drop-data"))) copyDir(path.join(SRC, "drop-data"), path.join(OUT, "drop-data"));
 fs.copyFileSync(path.join(SRC, "pages.css"), path.join(OUT, "pages.css"));
 copyDir(path.join(SRC, "js"), path.join(OUT, "js"));
 
