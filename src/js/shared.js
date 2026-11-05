@@ -508,9 +508,27 @@ function isProductVisible(product) {
       setupOrderSent();
       setupTrack();
       setupReveal();
+      setupTheme();
       var sb = $("#bag-clear");
       if (sb) sb.addEventListener("click", function () { writeBag([]); });
     });
+  }
+
+  /* ---------- OS Theme Detection & Dynamic Adaptation ---------- */
+  function setupTheme() {
+    if (typeof window === "undefined" || !window.matchMedia) return;
+    var media = window.matchMedia("(prefers-color-scheme: dark)");
+    function handleThemeChange() {
+      var bag = $("#bag");
+      if (bag && bag.classList.contains("open")) {
+        renderBag();
+      }
+    }
+    if (media.addEventListener) {
+      media.addEventListener("change", handleThemeChange);
+    } else if (media.addListener) {
+      media.addListener(handleThemeChange);
+    }
   }
 
   if (typeof window !== "undefined") {

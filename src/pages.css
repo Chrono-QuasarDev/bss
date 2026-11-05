@@ -8,7 +8,8 @@
 }
 .page-hero p { margin-top: 24px; max-width: 540px; color: var(--paper-dim); font-size: 17px; }
 .crumbs-line { font-size: 12px; letter-spacing: .18em; text-transform: uppercase; color: var(--paper-dim); }
-.crumbs-line a:hover { color: var(--paper); }
+.crumbs-line a { color: var(--paper-dim); transition: color .2s; }
+.crumbs-line a:hover { color: var(--plate); }
 
 .h3 { font-family: var(--display); font-size: clamp(24px, 3vw, 36px); line-height: 1; text-transform: uppercase; letter-spacing: -.01em; }
 .lead { font-size: 19px; color: var(--paper-dim); max-width: 640px; }
@@ -29,15 +30,16 @@
 .toolbar {
   display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap;
   padding: 18px 28px; border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 40;
-  background: rgba(13,13,11,.92); backdrop-filter: blur(10px);
+  background: var(--toolbar-bg); backdrop-filter: blur(10px);
 }
 .chips { display: flex; gap: 8px; flex-wrap: wrap; }
 .chip {
   padding: 10px 16px; border: 1px solid var(--line); border-radius: 999px;
   font-size: 12px; letter-spacing: .14em; text-transform: uppercase; transition: all .3s;
+  color: var(--paper);
 }
-.chip:hover { border-color: var(--paper); }
-.chip.on { background: var(--paper); color: var(--ink); border-color: var(--paper); }
+.chip:hover { border-color: var(--signal); color: var(--signal); }
+.chip.on { background: var(--signal); color: #f6f3eb; border-color: var(--signal); }
 .select {
   background: var(--ink-2); color: var(--paper); border: 1px solid var(--line);
   padding: 10px 14px; font: inherit; font-size: 13px; border-radius: 999px;
@@ -89,9 +91,9 @@
   object-fit: contain;
   display: block;
 }
-.pdp-info .link-btn { text-decoration: underline; color: var(--paper-dim); }
-.link-btn { text-decoration: underline; color: var(--paper-dim); font-size: 13px; }
-.link-btn:hover { color: var(--paper); }
+.pdp-info .link-btn { text-decoration: underline; color: var(--plate); }
+.link-btn { text-decoration: underline; color: var(--plate); font-size: 13px; }
+.link-btn:hover { color: var(--plate-hover, #1e40af); }
 .reco { padding: 100px 28px; border-top: 1px solid var(--line); }
 .reco .grid {
   display: grid;
@@ -127,10 +129,10 @@
   padding: 15px 16px; font: inherit; font-size: 16px; border-radius: 2px; width: 100%;
 }
 .field textarea { min-height: 96px; resize: vertical; }
-.field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: var(--paper); }
+.field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: var(--signal); }
 .field .hint { font-size: 13px; color: var(--paper-dim); }
-.field .err { display: none; font-size: 13px; color: var(--signal); }
-.field.error input, .field.error select, .field.error textarea { border-color: var(--signal); }
+.field .err { display: none; font-size: 13px; color: #dc2626; }
+.field.error input, .field.error select, .field.error textarea { border-color: #dc2626; }
 .field.error .err { display: block; }
 .radios { display: flex; gap: 10px; flex-wrap: wrap; }
 .radios label {
@@ -138,7 +140,7 @@
   font-size: 15px; text-transform: none; letter-spacing: 0; color: var(--paper);
 }
 .radios input { position: absolute; opacity: 0; pointer-events: none; }
-.radios label:has(input:checked) { border-color: var(--paper); background: var(--ink-2); }
+.radios label:has(input:checked) { border-color: var(--signal); background: var(--ink-2); }
 .radios small { display: block; color: var(--paper-dim); font-size: 13px; margin-top: 4px; }
 .sum-list { list-style: none; border-top: 1px solid var(--line); }
 .sum-list li { display: flex; justify-content: space-between; gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--line); font-size: 15px; color: var(--paper-dim); }
