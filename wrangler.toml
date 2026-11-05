@@ -1,0 +1,14 @@
+# Cloudflare Pages project configuration.
+# Static site from dist/, plus Pages Functions from functions/.
+# Secrets are NOT stored here. Set them with:
+#   npx wrangler pages secret put BSS_ACCESS_SECRET --project-name bss
+#   npx wrangler pages secret put DROP_REVOKED --project-name bss   (optional, comma-separated refs)
+
+name = "bss"
+pages_build_output_dir = "dist"
+compatibility_date = "2025-09-01"
+
+# Private bucket for the drop catalog and product photos. Never public.
+[[r2_buckets]]
+binding = "DROP_BUCKET"
+bucket_name = "bss-private-drops"

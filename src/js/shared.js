@@ -100,27 +100,6 @@ function storageSet(key, val) {
   } catch (e) {}
 }
 
-function getUnlockedDrops() {
-  try {
-    if (typeof window === "undefined") return null;
-    const data = storageGet('bss-drop-unlock', null);
-    if (data && data.expires > Date.now()) return data.dropId;
-  } catch(e) {}
-  return null;
-}
-
-function isProductPublic(product) {
-  if (!product.premium) return true;
-  if (product.dropDate && new Date(product.dropDate) <= new Date()) return true;
-  return false;
-}
-
-function isProductVisible(product) {
-  if (isProductPublic(product)) return true;
-  const unlocked = getUnlockedDrops();
-  return unlocked === product.dropId;
-}
-
 (function (root) {
   var PRODUCTS = (root.BSS_PRODUCTS && root.BSS_PRODUCTS.PRODUCTS) || (typeof window !== "undefined" && window.BSS_PRODUCTS ? window.BSS_PRODUCTS.PRODUCTS : []);
   var BY_ID = (root.BSS_PRODUCTS && root.BSS_PRODUCTS.BY_ID) || (typeof window !== "undefined" && window.BSS_PRODUCTS ? window.BSS_PRODUCTS.BY_ID : {});
@@ -132,21 +111,6 @@ function isProductVisible(product) {
       BY_ID = prodMod.BY_ID || {};
     } catch(e) {}
   }
-
-  // Load any previously decrypted drop products from storage so the bag/cart can access them
-  try {
-    if (typeof window !== "undefined") {
-      var cached = storageGet('bss-drop-unlocked-products', []);
-      if (Array.isArray(cached)) {
-        cached.forEach(function (p) {
-          if (!BY_ID[p.id]) {
-            PRODUCTS.push(p);
-            BY_ID[p.id] = p;
-          }
-        });
-      }
-    }
-  } catch (e) {}
 
   var WA_NUMBER = "233206764888";
   var WA_DISPLAY = "+233 20 676 4888";
@@ -283,19 +247,6 @@ function isProductVisible(product) {
     });
   }
   function orderMessage(bag, details) {
-    var hasPremium = bag.some(function (i) {
-      var p = BY_ID[i.id];
-      return p && p.premium;
-    });
-
-    var prefix = "";
-    if (hasPremium) {
-      var premiumItem = bag.map(function (i) { return BY_ID[i.id]; }).find(function (p) { return p && p.premium; });
-      var dropName = (premiumItem && premiumItem.dropName) || "Signal Collection";
-      var dropDate = (premiumItem && premiumItem.dropDate) || "";
-      prefix = "🔒 PRE-ORDER — " + dropName + "\n" + (dropDate ? "Drop date: " + dropDate + "\n\n" : "\n");
-    }
-
     var lines = ["Hello B.S.S, I'd like to place an order:", ""].concat(orderLines(bag));
     lines.push("", "Total: " + cedi(bagTotal(bag)));
     if (details) {
@@ -305,7 +256,7 @@ function isProductVisible(product) {
     } else {
       lines.push("", "Name:", "Delivery address (or landmark):", "Phone:", "Preferred payment (MoMo or bank):");
     }
-    return prefix + lines.join("\n");
+    return lines.join("\n");
   }
 
   /* ---------- Checkout ---------- */
@@ -437,12 +388,6 @@ function isProductVisible(product) {
     function apply() {
       var cards = $$("[data-product-card]", grid);
       cards.forEach(function (c) {
-        var id = c.getAttribute("data-id") || (c.getAttribute("href") || "").replace(/^.*product\/|\.html$/g, "");
-        var p = BY_ID[id];
-        if (p && !isProductPublic(p)) {
-          c.style.display = "none";
-          return;
-        }
         var show = filter === "all" || c.getAttribute("data-category") === filter;
         c.style.display = show ? "" : "none";
       });
@@ -536,26 +481,17 @@ function isProductVisible(product) {
       get: storageGet,
       set: storageSet
     };
-    window.getUnlockedDrops = getUnlockedDrops;
-    window.isProductVisible = isProductVisible;
-    window.isProductPublic = isProductPublic;
     window.BSS = {
       addToBag: addToBag,
       readBag: readBag,
       toast: toast,
       cedi: cedi,
-      getUnlockedDrops: getUnlockedDrops,
-      isProductVisible: isProductVisible,
-      isProductPublic: isProductPublic,
       storage: window.BSS_STORAGE
     };
   }
 
   if (typeof module !== "undefined" && module.exports) {
     module.exports = {
-      getUnlockedDrops: getUnlockedDrops,
-      isProductVisible: isProductVisible,
-      isProductPublic: isProductPublic,
       orderMessage: orderMessage
     };
   }
