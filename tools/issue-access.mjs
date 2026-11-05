@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Issues an early-access code for a buyer after you've confirmed their payment on WhatsApp.
 //
-// Usage:
+// Usage (reads BSS_ACCESS_SECRET from .env if present):
 //   BSS_ACCESS_SECRET=... node tools/issue-access.mjs 0042 --name "Ama Mensah"
 //
 // Prints the code and a message to paste into WhatsApp, and records the code in
@@ -11,10 +11,13 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { issueCode } from "../functions/_lib/access.mjs";
+import { loadDotEnv } from "./env.mjs";
+
+loadDotEnv();
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.join(here, "..");
-const catalogPath = path.join(root, "private", "drop-catalog.json");
+const catalogPath = path.join(root, "src", "drop-teaser.json");
 const ledgerPath = path.join(root, "private", "issued-access.csv");
 
 const args = process.argv.slice(2);
@@ -29,7 +32,7 @@ function fail(msg) {
 
 if (!process.env.BSS_ACCESS_SECRET) fail("set BSS_ACCESS_SECRET first (same value as in Cloudflare).");
 if (!ref || !/^\d{4}$/.test(ref)) fail('give a 4-digit buyer reference, e.g. 0042 --name "Ama"');
-if (!fs.existsSync(catalogPath)) fail("private/drop-catalog.json not found.");
+if (!fs.existsSync(catalogPath)) fail("src/drop-teaser.json not found. Run tools/pack-drop.mjs first.");
 
 const catalog = JSON.parse(fs.readFileSync(catalogPath, "utf8"));
 const code = await issueCode(process.env.BSS_ACCESS_SECRET, catalog.id, ref);

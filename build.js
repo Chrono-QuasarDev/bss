@@ -1,9 +1,9 @@
 // ============================================================================
 // EARLY-ACCESS DROPS (summary; see README.md for the full process)
 //
-// - Drop products are NOT in products.js. They live in private/drop-catalog.json,
-//   which is never committed. The build reads only the drop name, date and price
-//   from it, to show the public teaser.
+// - Drop products are NOT in products.js. They are packed into src/drop-data/bundle.enc
+//   (AES-256-GCM, key kept as a Pages secret). The build reads only the public
+//   src/drop-teaser.json to show the teaser.
 // - Buyers pay on WhatsApp. The owner issues a code with tools/issue-access.mjs.
 // - The drop page asks the server (functions/api/drop/*) for the products.
 //   The server returns them only with a valid, signed, unexpired cookie.
@@ -26,10 +26,9 @@ const WA_NUMBER = "233206764888";
 const WA_DISPLAY = "+233 20 676 4888";
 const WA_LINK = "https://wa.me/" + WA_NUMBER;
 
-/* ---------- Private drop catalog (teaser only at build time) ---------- */
-// The full catalog stays in private/drop-catalog.json. Only name, date and price
-// reach the public site. Products are served by the server after unlock.
-const DROP_FILE = path.join(ROOT_DIR, "private", "drop-catalog.json");
+/* ---------- Drop teaser (public: name, date, price only) ---------- */
+// The full catalog is encrypted in src/drop-data/bundle.enc and opened only by the server.
+const DROP_FILE = path.join(ROOT_DIR, "src", "drop-teaser.json");
 const DROP = fs.existsSync(DROP_FILE)
   ? JSON.parse(fs.readFileSync(DROP_FILE, "utf8"))
   : null;
@@ -924,6 +923,7 @@ for (const p of publicProducts)
 // Assets and scripts
 copyDir(path.join(ROOT_DIR, "assets"), path.join(OUT, "assets"));
 fs.copyFileSync(path.join(SRC, "styles.css"), path.join(OUT, "styles.css"));
+if (fs.existsSync(path.join(SRC, "drop-data"))) copyDir(path.join(SRC, "drop-data"), path.join(OUT, "drop-data"));
 fs.copyFileSync(path.join(SRC, "pages.css"), path.join(OUT, "pages.css"));
 copyDir(path.join(SRC, "js"), path.join(OUT, "js"));
 

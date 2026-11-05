@@ -129,3 +129,53 @@ export function getCookie(header, name) {
 export function dropClosesAt(dateIso) {
   return Date.parse(`${dateIso}T00:00:00Z`);
 }
+
+/* ---------- Encryption for the drop bundle (AES-256-GCM) ---------- */
+
+function bytesFromBase64(b64) {
+  const bin = atob(b64);
+  return Uint8Array.from(bin, (c) => c.charCodeAt(0));
+}
+
+export function base64FromBytes(bytes) {
+  let bin = "";
+  for (const b of bytes) bin += String.fromCharCode(b);
+  return btoa(bin);
+}
+
+/** Generates a random 256-bit key, base64 encoded. */
+export function newContentKey() {
+  const bytes = crypto.getRandomValues(new Uint8Array(32));
+  return base64FromBytes(bytes);
+}
+
+async function aesKey(keyB64, usage) {
+  const raw = bytesFromBase64(keyB64);
+  if (raw.length !== 32) throw new Error("DROP_CONTENT_KEY must be 32 random bytes, base64 encoded");
+  return crypto.subtle.importKey("raw", raw, { name: "AES-GCM" }, false, [usage]);
+}
+
+/** Returns nonce (12 bytes) followed by ciphertext and tag. */
+export async function encryptBytes(keyB64, plaintext) {
+  const nonce = crypto.getRandomValues(new Uint8Array(12));
+  const key = await aesKey(keyB64, "encrypt");
+  const ct = new Uint8Array(await crypto.subtle.encrypt({ name: "AES-GCM", iv: nonce }, key, plaintext));
+  const out = new Uint8Array(nonce.length + ct.length);
+  out.set(nonce, 0);
+  out.set(ct, nonce.length);
+  return out;
+}
+
+/** Returns the plaintext, or null if the key is wrong or the data was altered. */
+export async function decryptBytes(keyB64, blob) {
+  if (!blob || blob.length < 13) return null;
+  try {
+    const key = await aesKey(keyB64, "decrypt");
+    const pt = await crypto.subtle.decrypt({ name: "AES-GCM", iv: blob.slice(0, 12) }, key, blob.slice(12));
+    return new Uint8Array(pt);
+  } catch {
+    return null;
+  }
+}
+
+export { bytesFromBase64 };

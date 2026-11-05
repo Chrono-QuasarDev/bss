@@ -46,3 +46,6 @@ temp/
 # ------------------------------------------
 private/
 drop-codes.json
+
+# Local secrets (never commit)
+.env

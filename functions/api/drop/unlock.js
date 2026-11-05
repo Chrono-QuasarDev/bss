@@ -1,13 +1,14 @@
 // POST /api/drop/unlock  { "code": "BSS-0042-..." }
 // Checks the access code, then sets a signed, HttpOnly cookie that lasts until the drop closes.
 import { verifyCode, signCookie, dropClosesAt } from "../../_lib/access.mjs";
-import { COOKIE_NAME, json, loadCatalog, isRevoked } from "../../_lib/drop.mjs";
+import { COOKIE_NAME, json, loadBundle, isRevoked } from "../../_lib/drop.mjs";
 
 export async function onRequestPost({ request, env }) {
   if (!env.BSS_ACCESS_SECRET) return json({ error: "unavailable" }, 500);
 
-  const catalog = await loadCatalog(env);
-  if (!catalog) return json({ error: "unavailable" }, 404);
+  const bundle = await loadBundle(request, env);
+  if (!bundle) return json({ error: "unavailable" }, 404);
+  const catalog = bundle.catalog;
 
   const closesAt = dropClosesAt(catalog.date);
   if (Date.now() >= closesAt) return json({ error: "closed" }, 410);
