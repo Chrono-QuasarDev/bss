@@ -1,0 +1,43 @@
+dist/
+drop-codes.json
+assets/drops/*
+
+# ------------------------------------------
+# OPERATING SYSTEM JUNK
+# ------------------------------------------
+.DS_Store
+._*
+
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Linux trash folder.
+.Trash-*
+
+# ------------------------------------------
+# EDITOR AND IDE FILES
+# ------------------------------------------
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.cursor/
+
+# ------------------------------------------
+# ENVIRONMENT AND SECRETS
+# ------------------------------------------
+.env
+.env.*
+!.env.example
+
+node_modules/
+package*.json
+
+# ------------------------------------------
+# LOGS AND TEMP FILES
+# ------------------------------------------
+*.log
+tmp/
+temp/

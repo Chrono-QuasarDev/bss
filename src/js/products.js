@@ -1,0 +1,221 @@
+// B.S.S catalog. Placeholder products, prices and specs until the owner confirms the real range.
+// Prices are in Ghana cedis (GHS).
+(function (root) {
+  const PRODUCTS = [
+    {
+      id: "signal-tee",
+      slug: "signal-tee",
+      name: "Signal Tee",
+      category: "tees",
+      price: 200,
+      tag: "New",
+      tagStyle: "signal",
+      mark: false,
+      hoodie: false,
+      colors: [
+        {
+          name: "Ink Black",
+          hex: "#0d0d0b",
+          shirt: "#0d0d0b",
+          print: "#ff3b1f",
+        },
+        { name: "Bone", hex: "#e9e4d8", shirt: "#e9e4d8", print: "#0d0d0b" },
+        {
+          name: "Plate Blue",
+          hex: "#2439ff",
+          shirt: "#2439ff",
+          print: "#f3efe6",
+        },
+      ],
+      sizes: ["S", "M", "L", "XL", "XXL"],
+      soldOut: [],
+      desc: "Heavyweight cotton with a dropped shoulder and a chest print pulled from a single screen. Built to be worn hard.",
+      details: [
+        "240 GSM heavyweight cotton jersey",
+        "Dropped shoulder, boxy body",
+        "Screen-printed, not transferred. The print is part of the shirt",
+        "Pre-shrunk",
+      ],
+    },
+    {
+      id: "registration-tee",
+      slug: "registration-tee",
+      name: "Registration Tee",
+      category: "tees",
+      price: 220,
+      tag: "Limited",
+      tagStyle: "",
+      mark: true,
+      hoodie: false,
+      colors: [
+        {
+          name: "Ink Black",
+          hex: "#0d0d0b",
+          shirt: "#0d0d0b",
+          print: "#f3efe6",
+        },
+        {
+          name: "Concrete",
+          hex: "#8a867b",
+          shirt: "#8a867b",
+          print: "#0d0d0b",
+        },
+      ],
+      sizes: ["S", "M", "L", "XL", "XXL"],
+      soldOut: ["XXL"],
+      desc: "Crosshair marks on the chest, the same ones printers use to line up colour. A reminder that everything here is made by hand.",
+      details: [
+        "260 GSM heavyweight cotton",
+        "Oversized fit, drop shoulder",
+        "Limited run. Once the screen is retired, the print is gone",
+        "Pre-shrunk",
+      ],
+    },
+    {
+      id: "tro-tro-tee",
+      slug: "tro-tro-tee",
+      name: "Tro-Tro Tee",
+      category: "tees",
+      price: 180,
+      tag: "Bestseller",
+      tagStyle: "",
+      mark: false,
+      hoodie: false,
+      colors: [
+        { name: "Bone", hex: "#e9e4d8", shirt: "#e9e4d8", print: "#2439ff" },
+        { name: "Signal", hex: "#ff3b1f", shirt: "#ff3b1f", print: "#0d0d0b" },
+      ],
+      sizes: ["S", "M", "L", "XL", "XXL"],
+      soldOut: [],
+      desc: "A lighter, everyday cut for the city. Bold lettering inspired by hand-painted signage on the road.",
+      details: [
+        "180 GSM cotton jersey",
+        "Regular fit",
+        "Screen-printed chest and back",
+        "Pre-shrunk",
+      ],
+    },
+    {
+      id: "ink-hoodie",
+      slug: "ink-hoodie",
+      name: "Ink Hoodie",
+      category: "hoodies",
+      price: 420,
+      tag: "New",
+      tagStyle: "signal",
+      mark: false,
+      hoodie: true,
+      colors: [
+        {
+          name: "Ink Black",
+          hex: "#0d0d0b",
+          shirt: "#0d0d0b",
+          print: "#e9e4d8",
+        },
+        {
+          name: "Concrete",
+          hex: "#8a867b",
+          shirt: "#8a867b",
+          print: "#0d0d0b",
+        },
+      ],
+      sizes: ["S", "M", "L", "XL", "XXL"],
+      soldOut: [],
+      desc: "Fleece-lined heavyweight hoodie with a kangaroo pocket and a large back print.",
+      details: [
+        "400 GSM fleece-back cotton",
+        "Relaxed fit, kangaroo pocket",
+        "Large back print",
+        "Pre-shrunk",
+      ],
+    },
+    // EXAMPLE — replace with real products and real image hashes
+    {
+      id: "signal-tee-v2",
+      slug: "signal-tee-v2",
+      name: "Signal Tee V2",
+      category: "tees",
+      price: 240,
+      tag: "Drop",
+      tagStyle: "signal",
+      mark: false,
+      hoodie: false,
+      colors: [
+        {
+          name: "Ink Black",
+          hex: "#0d0d0b",
+          shirt: "#0d0d0b",
+          print: "#ff3b1f",
+        },
+        { name: "Bone", hex: "#e9e4d8", shirt: "#e9e4d8", print: "#0d0d0b" },
+      ],
+      sizes: ["S", "M", "L", "XL", "XXL"],
+      soldOut: [],
+      desc: "Second iteration of the Signal Tee with revised placement and experimental pigment. Early access pre-order.",
+      details: [
+        "280 GSM ultra-heavyweight cotton",
+        "Custom screen print with high-opacity ink",
+        "Limited pre-order run",
+        "Pre-shrunk",
+      ],
+      premium: true,
+      dropId: "signal-drop-01",
+      dropPrice: 20,
+      dropDate: "2027-08-15",
+      dropName: "Signal Collection",
+      dropImage: "e4a8b7c1d2e3f4a5.webp",
+    },
+    // EXAMPLE — replace with real products and real image hashes
+    {
+      id: "phantom-hoodie",
+      slug: "phantom-hoodie",
+      name: "Phantom Hoodie",
+      category: "hoodies",
+      price: 450,
+      tag: "Drop",
+      tagStyle: "signal",
+      mark: false,
+      hoodie: true,
+      colors: [
+        {
+          name: "Ink Black",
+          hex: "#0d0d0b",
+          shirt: "#0d0d0b",
+          print: "#2439ff",
+        },
+        {
+          name: "Concrete",
+          hex: "#8a867b",
+          shirt: "#8a867b",
+          print: "#ff3b1f",
+        },
+      ],
+      sizes: ["S", "M", "L", "XL", "XXL"],
+      soldOut: [],
+      desc: "Black-on-black tonal chest print with high-contrast back graphic. Pre-order exclusive.",
+      details: [
+        "450 GSM fleece-back cotton",
+        "Double-lined hood with custom drawstrings",
+        "Special edition screen print",
+        "Pre-shrunk",
+      ],
+      premium: true,
+      dropId: "signal-drop-01",
+      dropPrice: 20,
+      dropDate: "2027-08-15",
+      dropName: "Signal Collection",
+      dropImage: "9f1a2b3c4d5e6f7a.webp",
+    },
+  ];
+
+  const API = {
+    PRODUCTS: PRODUCTS,
+    BY_ID: Object.fromEntries(
+      PRODUCTS.map(function (p) {
+        return [p.id, p];
+      }),
+    ),
+  };
+  if (typeof module !== "undefined" && module.exports) module.exports = API;
+  else root.BSS_PRODUCTS = API;
+})(typeof window !== "undefined" ? window : globalThis);
