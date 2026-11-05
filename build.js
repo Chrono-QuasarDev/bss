@@ -71,19 +71,27 @@ function encryptDropData(products, code) {
   };
 }
 
-// Read drop-codes.json (kept locally, in .gitignore, never committed)
+// Read drop codes from environment variable (for Cloudflare Pages / CI) or local drop-codes.json
 let DROP_CODES_MAP = {};
-const dropCodesFile = path.join(ROOT_DIR, "drop-codes.json");
-if (fs.existsSync(dropCodesFile)) {
+if (process.env.DROP_CODES) {
   try {
-    DROP_CODES_MAP = JSON.parse(fs.readFileSync(dropCodesFile, "utf8"));
+    DROP_CODES_MAP = JSON.parse(process.env.DROP_CODES);
   } catch (e) {
-    console.warn("Warning: Could not parse drop-codes.json:", e.message);
+    console.warn("Warning: Could not parse DROP_CODES env var:", e.message);
   }
 } else {
-  console.warn(
-    "Warning: drop-codes.json not found. Premium drops won't be available.",
-  );
+  const dropCodesFile = path.join(ROOT_DIR, "drop-codes.json");
+  if (fs.existsSync(dropCodesFile)) {
+    try {
+      DROP_CODES_MAP = JSON.parse(fs.readFileSync(dropCodesFile, "utf8"));
+    } catch (e) {
+      console.warn("Warning: Could not parse drop-codes.json:", e.message);
+    }
+  } else {
+    console.warn(
+      "Warning: drop-codes.json not found and DROP_CODES env var not set. Premium drops won't be available.",
+    );
+  }
 }
 
 const DROP_DATA = {};
