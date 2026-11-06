@@ -49,3 +49,5 @@ drop-codes.json
 
 # Local secrets (never commit)
 .env
+*.patch
+*.enc

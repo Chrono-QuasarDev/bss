@@ -70,9 +70,16 @@
     if ($("drop-closed-link")) $("drop-closed-link").setAttribute("href", "shop.html");
   }
 
-  function setError(on) {
+  function showUnavailable() {
+    show("drop-gate", false);
+    show("drop-unavailable", true);
+  }
+
+  // Shows a message under the code field. An empty message clears it.
+  function setError(msg) {
     var field = $("drop-code").closest(".field");
-    field.classList.toggle("error", on);
+    field.classList.toggle("error", !!msg);
+    if ($("drop-error")) $("drop-error").textContent = msg || "";
   }
 
   function load() {
@@ -93,13 +100,15 @@
   function setupForm() {
     var form = $("drop-form");
     if (!form) return;
+    var btn = $("drop-submit");
+    var label = btn.textContent;
     form.addEventListener("submit", function (e) {
       e.preventDefault();
       var code = $("drop-code").value.trim();
-      setError(false);
-      if (!code) { setError(true); return; }
-      var btn = $("drop-submit");
+      setError("");
+      if (!code) { setError("Enter your access code first."); return; }
       btn.disabled = true;
+      btn.textContent = "Checking…";
       fetch(API + "/unlock", {
         method: "POST",
         credentials: "same-origin",
@@ -108,11 +117,27 @@
       })
         .then(function (res) {
           if (res.status === 410) { showClosed({}); return null; }
-          if (!res.ok) { setError(true); return null; }
+          if (res.status === 401) {
+            setError("That code isn't recognised. Check every character, including the dashes. If you've just paid, message us on WhatsApp.");
+            return null;
+          }
+          if (res.status === 429) {
+            setError("Too many attempts. Wait a few minutes and try again.");
+            return null;
+          }
+          if (!res.ok) {
+            showUnavailable();
+            return null;
+          }
           return load();
         })
-        .catch(function () { setError(true); })
-        .finally(function () { btn.disabled = false; });
+        .catch(function () {
+          setError("We couldn't reach the server. Check your connection and try again.");
+        })
+        .finally(function () {
+          btn.disabled = false;
+          btn.textContent = label;
+        });
     });
   }
 

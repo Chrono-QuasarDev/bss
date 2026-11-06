@@ -844,7 +844,7 @@ ${pageHero("Early access", DROP ? DROP.name : "Early access", "Paid buyers with 
       <div class="field">
         <label for="drop-code">Access code</label>
         <input id="drop-code" name="code" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="BSS-0000-XXXX-XXXX-XXXX-XXXX">
-        <span class="err">That code isn't valid. Check it and try again.</span>
+        <span class="err" id="drop-error" role="alert">That code isn't valid. Check it and try again.</span>
       </div>
       <div><button class="btn btn-primary" type="submit" id="drop-submit">Unlock early access</button></div>
     </form>
