@@ -212,7 +212,7 @@ function storageSet(key, val) {
     if (list) {
       list.innerHTML = bag.length
         ? bag.map(function (item, i) { return lineHTML(item, i, true); }).join("")
-        : '<p class="empty">Your bag is empty. <a href="shop.html">Browse the shop</a>.</p>';
+        : '<p class="empty">Your bag is empty. <a href="' + ROOT() + 'shop.html">Browse the shop</a>.</p>';
       var total = $("#bag-total");
       if (total) total.textContent = cedi(bagTotal(bag));
       var cta = $("#bag-checkout");
@@ -223,7 +223,7 @@ function storageSet(key, val) {
     if (cartLines) {
       cartLines.innerHTML = bag.length
         ? bag.map(function (item, i) { return lineHTML(item, i, false); }).join("")
-        : '<div class="empty-state"><h2 class="h3">Your bag is empty</h2><p>Pick a piece from the shop and it will appear here.</p><a class="btn btn-primary" href="shop.html">Shop the drop</a></div>';
+        : '<div class="empty-state"><h2 class="h3">Your bag is empty</h2><p>Pick a piece from the shop and it will appear here.</p><a class="btn btn-primary" href="' + ROOT() + 'shop.html">Shop the drop</a></div>';
       var sub = $("#cart-subtotal");
       if (sub) sub.textContent = cedi(bagTotal(bag));
       var sub2 = $("#cart-subtotal2");
@@ -265,7 +265,7 @@ function storageSet(key, val) {
     if (!box) return;
     var bag = readBag();
     if (!bag.length) {
-      box.innerHTML = '<p class="empty">Your bag is empty. <a href="shop.html">Browse the shop</a>.</p>';
+      box.innerHTML = '<p class="empty">Your bag is empty. <a href="' + ROOT() + 'shop.html">Browse the shop</a>.</p>';
       var f = $("#checkout-form");
       if (f) f.style.display = "none";
       return;
@@ -421,6 +421,8 @@ function storageSet(key, val) {
       entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } });
     }, { threshold: 0.12 });
     els.forEach(function (el) { io.observe(el); });
+    // Fail-safe: never leave content invisible if the observer misfires.
+    setTimeout(function () { els.forEach(function (e) { e.classList.add("in"); }); }, 1500);
   }
 
   /* ---------- Global wiring ---------- */

@@ -174,7 +174,7 @@ function layout({
   <link rel="stylesheet" href="${root}styles.css">
   <link rel="stylesheet" href="${root}pages.css">
   ${EXTRA_HEAD_CSS}
-  <script>window.BSS_ROOT = ${JSON.stringify(root)};</script>
+  <script>window.BSS_ROOT = ${JSON.stringify(root)}; document.documentElement.classList.add("js");</script>
 </head>
 <body class="${bodyClass}">
 ${header(root, active)}
@@ -874,6 +874,7 @@ ${pageHero("Early access", DROP ? DROP.name : "Early access", "Paid buyers with 
   <div class="wrap prose">
     <h2 class="h3" style="margin-bottom:14px">Not open yet</h2>
     <p class="muted">Early access isn't available right now. Check back soon, or message us on WhatsApp.</p>
+    <p style="margin-top:22px"><a class="btn btn-primary" data-wa-text="Hi B.S.S, I tried to open early access but it isn't available right now.">Message us on WhatsApp</a></p>
   </div>
 </section>`;
   return layout({

@@ -132,7 +132,7 @@
           return load();
         })
         .catch(function () {
-          setError("We couldn't reach the server. Check your connection and try again.");
+          setError("We can't open early access right now. Check your connection and try again.");
         })
         .finally(function () {
           btn.disabled = false;
