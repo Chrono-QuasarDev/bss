@@ -122,7 +122,7 @@ function footer(root) {
       </div>
       <div>
         <h5>Talk to us</h5>
-        <a data-wa-link>WhatsApp ${WA_DISPLAY}</a>
+        <a href="${WA_LINK}" target="_blank" rel="noopener" data-wa-link>WhatsApp ${WA_DISPLAY}</a>
         <a href="${root}contact.html">Contact</a>
         <a href="${root}about.html">About B.S.S</a>
         <a href="${root}privacy.html">Privacy</a>
@@ -232,7 +232,7 @@ function renderUpcomingDropTeasers(root) {
 <div class="drop-teaser-wrap">
   <div class="drop-teaser card" style="border: 2px solid var(--signal); background: var(--ink-2); padding: 36px 32px; display: flex; flex-direction: column; gap: 14px;">
     <div class="crumbs-line" style="color:var(--signal);font-weight:600;letter-spacing:.2em;text-transform:uppercase;">Early Access</div>
-    <h2 class="teaser-title" style="font-family:var(--display);font-size:clamp(26px,4vw,40px);line-height:1.1;text-transform:uppercase;">${DROP.name} — Dropping ${formatMonthDay(DROP.date)}</h2>
+    <h2 class="teaser-title" style="font-family:var(--display);font-size:clamp(26px,4vw,40px);line-height:1.18;letter-spacing:0.035em;text-transform:uppercase;">${DROP.name} — Dropping ${formatMonthDay(DROP.date)}</h2>
     <div class="teaser-price" style="font-size:16px;color:var(--paper-dim);">Early access fee: ${cedi(DROP.price)} (credited to your order)</div>
     <div class="teaser-actions" style="display:flex;align-items:center;gap:18px;margin-top:8px;flex-wrap:wrap;">
       <a class="btn btn-primary" href="${waText(msg)}" target="_blank" rel="noopener">Get early access</a>
@@ -322,7 +322,7 @@ pages["index.html"] = (root = "") => {
       <span class="label">Ordering</span>
       <div class="wa-big">Message us on WhatsApp</div>
       <p>Pick your pieces, then send your order. We confirm your total and delivery fee, then you pay by mobile money or bank transfer.</p>
-      <p style="margin-top:22px"><a class="btn btn-primary" data-wa-link>Open WhatsApp</a></p>
+      <p style="margin-top:22px"><a class="btn btn-primary" href="${WA_LINK}" target="_blank" rel="noopener" data-wa-link>Open WhatsApp</a></p>
     </div>
     <ul class="order-list">
       <li><span>1. Choose your piece and size</span></li>
@@ -439,7 +439,7 @@ pages["cart.html"] = (root = "") => {
 <main class="cart-layout">
   <div>
     <div class="crumbs-line" style="margin-bottom:16px"><a href="${root}shop.html">Continue shopping</a></div>
-    <h1 class="h1" style="font-family:var(--display);font-size:clamp(48px,7vw,100px);line-height:.9;text-transform:uppercase">Your bag</h1>
+    <h1 class="h1" style="font-family:var(--display);font-size:clamp(48px,7vw,100px);line-height:1.06;letter-spacing:0.04em;text-transform:uppercase">Your bag</h1>
     <p id="cart-count" class="muted" style="margin:14px 0 30px"></p>
     <div id="cart-lines"></div>
   </div>
@@ -461,7 +461,7 @@ pages["checkout.html"] = (root = "") => {
   <div>
     <div class="crumbs-line" style="margin-bottom:16px"><a href="${root}cart.html">Back to bag</a></div>
     <div class="checkout-form-head">
-      <h1 style="font-family:var(--display);font-size:clamp(48px,7vw,100px);line-height:.9;text-transform:uppercase">Checkout</h1>
+      <h1 style="font-family:var(--display);font-size:clamp(48px,7vw,100px);line-height:1.06;letter-spacing:0.04em;text-transform:uppercase">Checkout</h1>
       <p class="muted" style="margin-top:14px;max-width:520px">Tell us where to bring your pieces. We'll open WhatsApp with your order ready to send, and confirm the delivery fee with you there.</p>
     </div>
     <form class="form" id="checkout-form" novalidate>
@@ -549,7 +549,7 @@ ${pageHero("Orders", "Track your order", "Send us your order number and we'll re
     <div class="prose">
       <h2 class="h3">No order number?</h2>
       <p class="muted" style="margin-top:14px">Your order number is in the confirmation we send you on WhatsApp. If you can't find it, message us with your name and the phone number you ordered with.</p>
-      <p class="muted"><a class="btn btn-ghost" data-wa-link style="margin-top:14px">Message us</a></p>
+      <p class="muted"><a class="btn btn-ghost" href="${WA_LINK}" target="_blank" rel="noopener" data-wa-link style="margin-top:14px">Message us</a></p>
     </div>
   </div>
 </main>`;
@@ -588,7 +588,7 @@ ${pageHero("Contact", "Say hello", "The fastest way to reach us is WhatsApp. We 
       <h3>WhatsApp</h3>
       <div class="big">${WA_DISPLAY}</div>
       <p>Sizing, delivery, orders and anything else. Message us and we'll reply.</p>
-      <div><a class="btn btn-primary" data-wa-link>Open WhatsApp</a></div>
+      <div><a class="btn btn-primary" href="${WA_LINK}" target="_blank" rel="noopener" data-wa-link>Open WhatsApp</a></div>
     </div>
     <div class="contact-card">
       <h3>Find us</h3>
