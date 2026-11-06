@@ -165,7 +165,7 @@ Use the international format without `+` or a leading zero. `0206764888` becomes
 ## Design system
 
 - **Themes** (`src/styles.css`): a light studio-cream theme by default (`--ink` cream canvas, `--ink-2` linen surfaces, `--paper` deep charcoal text, `--signal` emerald `#0e774c`, `--plate` cobalt `#1d4ed8`), and a dark ink theme via `prefers-color-scheme: dark` (`--ink` deep charcoal, `--paper` studio cream, `--signal` luminous emerald, `--plate` electric blue). Product artwork tiles always use a fixed dark studio panel (`--tile`), so light garments stay visible in both themes. The accent band (`.ticker`) uses `--signal`.
-- **Type:** `Arial Black` for display, Helvetica or Arial for text. Both are system fonts, so nothing is downloaded. Swap `--display` and `--text` to use licensed (or self-hosted open-licensed) fonts — none are bundled yet.
+- **Type:** **Anton** (display) and **Archivo** variable weight 100–900 (text), self-hosted latin subsets in `assets/fonts/`, both SIL Open Font License (see `OFL-Anton.txt` / `OFL-Archivo.txt` there). No external requests; `font-display: swap`, with a preload on the display face. Fallbacks: `Arial Black` / `Helvetica Neue`, Helvetica, Arial.
 - **Components:** `.btn`, `.card`, `.drawer`, `.field`, `.ticker`.
 
 ## Known gaps

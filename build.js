@@ -145,11 +145,6 @@ const EXTRA_HEAD_CSS = `
 .mnav-panel { position: absolute; right: 0; top: 52px; background: var(--ink-2); border: 1px solid var(--line); padding: 10px; min-width: 200px; display: flex; flex-direction: column; }
 .mnav-panel a { padding: 12px 14px; font-size: 14px; }
 .mnav-panel a:hover { color: var(--signal); }
-.site-footer { padding: 90px 28px 40px; border-top: 1px solid var(--line); overflow: hidden; }
-.site-footer h5 { font-size: 12px; letter-spacing: .24em; text-transform: uppercase; color: var(--paper-dim); margin-bottom: 14px; font-weight: 400; }
-.site-footer .footer-links a { display: block; font-size: 15px; margin-bottom: 9px; opacity: .9; }
-.site-footer .footer-links a:hover { color: var(--signal); }
-.site-footer .big-mark { font-family: var(--display); font-size: clamp(90px, 22vw, 340px); line-height: .8; color: transparent; -webkit-text-stroke: 1px var(--line); margin-top: 60px; }
 @media (max-width: 900px) { .mnav { display: block; } }
 </style>`;
 
@@ -173,6 +168,7 @@ function layout({
   <link rel="icon" href="${root}assets/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="${root}styles.css">
   <link rel="stylesheet" href="${root}pages.css">
+  <link rel="preload" href="${root}assets/fonts/anton-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
   ${EXTRA_HEAD_CSS}
   <script>window.BSS_ROOT = ${JSON.stringify(root)}; document.documentElement.classList.add("js");</script>
 </head>

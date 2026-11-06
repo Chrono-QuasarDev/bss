@@ -1,3 +1,7 @@
+/* Self-hosted open-licensed fonts (SIL OFL, see assets/fonts/OFL-*.txt) */
+@font-face { font-family: "Anton"; src: url("assets/fonts/anton-latin-400-normal.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: "Archivo"; src: url("assets/fonts/archivo-latin-wght-normal.woff2") format("woff2-variations"); font-weight: 100 900; font-style: normal; font-display: swap; }
+
 :root,
 [data-theme="light"] {
   --ink: #f6f3eb;            /* Studio cream canvas background */
@@ -15,8 +19,9 @@
   --grain-opacity: 0.04;
   --manifesto-accent: #35d07f;   /* bright emerald for the dark band (light theme) */
   --tile: #171512;               /* fixed dark studio panel for artwork tiles */
-  --display: "Arial Black", "Helvetica Neue", Impact, sans-serif;
-  --text: "Helvetica Neue", Helvetica, Arial, system-ui, sans-serif;
+  --mark-line: rgba(20, 26, 22, 0.32);  /* footer wordmark stroke (light theme) */
+  --display: "Anton", "Arial Black", "Helvetica Neue", Impact, sans-serif;
+  --text: "Archivo", "Helvetica Neue", Helvetica, Arial, system-ui, sans-serif;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -37,6 +42,7 @@
     --grain-opacity: 0.06;
     --manifesto-accent: #0e774c;   /* dark emerald for the cream band (dark theme) */
     --tile: #171512;               /* fixed dark studio panel for artwork tiles */
+    --mark-line: rgba(246, 243, 235, 0.26);  /* footer wordmark stroke (dark theme) */
   }
 }
 
@@ -56,6 +62,7 @@
   --grain-opacity: 0.06;
   --manifesto-accent: #0e774c;   /* dark emerald for the cream band (dark theme) */
   --tile: #171512;               /* fixed dark studio panel for artwork tiles */
+  --mark-line: rgba(246, 243, 235, 0.26);  /* footer wordmark stroke (dark theme) */
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -307,14 +314,16 @@ section { position: relative; padding: 120px 28px; }
 .order-list li { padding: 14px 0; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; gap: 16px; }
 
 /* Footer */
-footer { padding: 64px 28px 40px; border-top: 1px solid var(--line); }
-.foot {
-  display: flex; justify-content: space-between; flex-wrap: wrap; gap: 32px;
+.site-footer { padding: 90px 28px 40px; border-top: 1px solid var(--line); overflow: hidden; }
+.site-footer h5 { font-size: 12px; letter-spacing: .24em; text-transform: uppercase; color: var(--paper-dim); margin-bottom: 14px; font-weight: 400; }
+.site-footer .footer-links a { display: block; font-size: 15px; margin-bottom: 9px; opacity: .9; }
+.site-footer .footer-links a:hover { color: var(--signal); }
+.site-footer .big-mark {
+  font-family: var(--display); font-size: clamp(90px, 22vw, 340px); line-height: .8;
+  color: color-mix(in srgb, var(--paper) 4%, transparent);
+  -webkit-text-stroke: 1.5px var(--mark-line);
+  margin-top: 60px; user-select: none;
 }
-.foot h5 { font-size: 12px; letter-spacing: .24em; text-transform: uppercase; color: var(--paper-dim); margin-bottom: 14px; font-weight: 400; }
-.foot a, .foot p { display: block; font-size: 15px; margin-bottom: 8px; color: var(--paper); opacity: .9; }
-.foot a:hover { color: var(--signal); }
-.big-mark { font-family: var(--display); font-size: clamp(90px, 22vw, 340px); line-height: .8; color: transparent; -webkit-text-stroke: 1px var(--line); margin-top: 56px; }
 
 /* Bag drawer */
 .scrim {
@@ -417,6 +426,7 @@ html.js .reveal { opacity: 0; transform: translateY(28px); transition: opacity 1
 html.js .reveal.in { opacity: 1; transform: none; }
 
 @media (max-width: 900px) {
+  .site-footer { padding: 64px 20px 32px; }
   .nav { display: none; }
   section { padding: 84px 20px; }
   .hero { padding: 0 20px 44px; }
