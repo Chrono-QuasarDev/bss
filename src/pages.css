@@ -29,7 +29,7 @@
 /* Shop toolbar */
 .toolbar {
   display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap;
-  padding: 18px 28px; border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 40;
+  padding: 18px 28px; border-bottom: 1px solid var(--line); position: sticky; top: 76px; z-index: 40;
   background: var(--toolbar-bg); backdrop-filter: blur(10px);
 }
 .chips { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -61,7 +61,7 @@
 /* Product page extras */
 .pdp-gallery {
   position: relative;
-  background: var(--ink-2);
+  background: var(--tile);
   border: 1px solid var(--line);
   aspect-ratio: 1;
   max-width: 520px;
@@ -93,6 +93,7 @@
 }
 .pdp-info .link-btn { text-decoration: underline; color: var(--plate); }
 .link-btn { text-decoration: underline; color: var(--plate); font-size: 13px; }
+.qty .link-btn { display: inline-flex; align-items: center; min-height: 40px; padding: 0 12px; }
 .link-btn:hover { color: var(--plate-hover, #1e40af); }
 .reco { padding: 100px 28px; border-top: 1px solid var(--line); }
 .reco .grid {

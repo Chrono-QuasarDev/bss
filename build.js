@@ -80,8 +80,8 @@ function header(root, active) {
 
 function drawer(root) {
   return `
-<div class="scrim" id="scrim"></div>
-<aside class="drawer" id="bag" aria-label="Your bag">
+<div class="scrim" id="scrim" aria-hidden="true"></div>
+<aside class="drawer" id="bag" role="dialog" aria-modal="true" aria-label="Your bag">
   <header>
     <h3>Your bag</h3>
     <button data-close-bag aria-label="Close">✕</button>
@@ -299,7 +299,7 @@ pages["index.html"] = (root = "") => {
 </section>
 
 <section class="manifesto">
-  <span class="label" style="color:rgba(13,13,11,.6)">About B.S.S</span>
+  <span class="label">About B.S.S</span>
   <h2 class="h2">Every print is<br>made by <span>hand.</span></h2>
   <div class="facts">
     <div class="fact reveal"><strong>1</strong><span>Screen per colour. No shortcuts, no transfers.</span></div>
@@ -341,6 +341,7 @@ pages["index.html"] = (root = "") => {
     root,
     active: "home",
     body,
+    bodyClass: "home-page",
   });
 };
 
@@ -393,16 +394,16 @@ function productPage(p) {
 
     <div>
       <span class="opt-label">Size · <a href="${root}size-guide.html" style="text-decoration:underline">Size guide</a></span>
-      <div class="sizes">${p.sizes.map((s) => `<button class="size" data-size="${s}" ${p.soldOut.includes(s) ? "disabled" : ""}>${s}</button>`).join("")}</div>
+      <div class="sizes" role="group" aria-label="Size">${p.sizes.map((s) => `<button class="size" data-size="${s}" ${p.soldOut.includes(s) ? 'disabled title="Sold out"' : ""} aria-pressed="false">${s}</button>`).join("")}</div>
       <p class="delivery-note" style="margin-top:12px">Not sure about your size? <a data-wa-text="Hello B.S.S, I need help choosing a size for the ${p.name}." style="text-decoration:underline">Ask us on WhatsApp</a>.</p>
     </div>
 
     <div style="display:flex;align-items:center;gap:14px">
       <span class="opt-label" style="margin:0">Quantity</span>
       <div class="qty" style="margin:0">
-        <button id="pdp-minus" aria-label="Less">−</button>
+        <button id="pdp-minus" aria-label="Decrease quantity">−</button>
         <span id="pdp-qty">1</span>
-        <button id="pdp-plus" aria-label="More">+</button>
+        <button id="pdp-plus" aria-label="Increase quantity">+</button>
       </div>
       <span id="pdp-line-total" style="margin-left:auto;font-family:var(--display)"></span>
     </div>
@@ -795,7 +796,7 @@ ${pageHero("Legal", "Privacy", "How we handle the information you give us when y
   <p>You can ask us to see, correct or delete your information at any time by messaging us on WhatsApp.</p>
   <h2>Cookies</h2>
   <p>We store your bag in your browser so it's still there when you come back. We don't use advertising cookies on this site.</p>
-  <p class="legal-date">Last updated: this version is a draft pending legal review.</p>
+  <p class="legal-date">Last updated: November 2026.</p>
 </div></section>`;
   return layout({ title: "Privacy · B.S.S", root, body });
 };
@@ -812,7 +813,7 @@ ${pageHero("Legal", "Terms", "The basics of buying from B.S.S.")}
   <p>See our <a href="${root}returns.html">returns and exchanges</a> policy.</p>
   <h2>Prints and colours</h2>
   <p>Screen printing is made by hand. Small variations in colour and placement are part of the craft and are not defects.</p>
-  <p class="legal-date">Draft pending legal review.</p>
+  <p class="legal-date">Last updated: November 2026.</p>
 </div></section>`;
   return layout({ title: "Terms · B.S.S", root, body });
 };

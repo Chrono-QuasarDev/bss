@@ -14,7 +14,8 @@
       ? '<g stroke="' + printColor + '" fill="none" stroke-width="2" opacity=".9"><circle cx="300" cy="260" r="26"/><line x1="300" y1="222" x2="300" y2="298"/><line x1="262" y1="260" x2="338" y2="260"/></g>'
       : '<text x="300" y="268" text-anchor="middle" font-family="Arial Black, Helvetica, sans-serif" font-size="46" fill="' + printColor + '" letter-spacing="2">B.S.S</text>';
     return '<svg viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" aria-hidden="true">' +
-      '<rect width="600" height="600" fill="var(--ink-2, #ece6da)"/>' +
+      '<defs><radialGradient id="bssTileBg" cx="50%" cy="38%" r="78%"><stop offset="0%" stop-color="#27231c"/><stop offset="100%" stop-color="#171512"/></radialGradient></defs>' +
+      '<rect width="600" height="600" fill="url(#bssTileBg)"/>' +
       '<path d="' + body + '" fill="' + color + '"/>' + collar + chest + '</svg>';
   }
   const API = { shirtSVG: shirtSVG };

@@ -163,16 +163,23 @@ function storageSet(key, val) {
   }
 
   /* ---------- Drawer and toast ---------- */
+  var lastFocus = null;
   function openBag() {
+    lastFocus = document.activeElement;
     var d = $("#bag"), s = $("#scrim");
     if (d) d.classList.add("open");
     if (s) s.classList.add("open");
+    document.documentElement.style.overflow = "hidden";
     renderBag();
+    var closeBtn = d ? d.querySelector("[data-close-bag]") : null;
+    if (closeBtn) closeBtn.focus();
   }
   function closeBag() {
     var d = $("#bag"), s = $("#scrim");
     if (d) d.classList.remove("open");
     if (s) s.classList.remove("open");
+    document.documentElement.style.overflow = "";
+    if (lastFocus && lastFocus.focus) lastFocus.focus();
   }
   function toast(msg) {
     var t = $("#toast");
@@ -354,7 +361,10 @@ function storageSet(key, val) {
       if (art) art.innerHTML = ART.shirtSVG(c.shirt, { hoodie: p.hoodie, mark: p.mark, print: c.print });
       $("#pdp-color-name").textContent = c.name;
       $$(".color-btn").forEach(function (b) { b.classList.toggle("on", b.dataset.name === color); b.setAttribute("aria-pressed", b.dataset.name === color); });
-      $$(".size").forEach(function (b) { b.classList.toggle("on", b.dataset.size === size); });
+      $$(".size").forEach(function (b) {
+        b.classList.toggle("on", b.dataset.size === size);
+        b.setAttribute("aria-pressed", b.dataset.size === size ? "true" : "false");
+      });
       $("#pdp-qty").textContent = qty;
       $("#pdp-add").disabled = !size;
       $("#pdp-add-label").textContent = size ? "Add to bag" : "Choose a size";
@@ -427,6 +437,9 @@ function storageSet(key, val) {
 
   /* ---------- Global wiring ---------- */
   if (typeof document !== "undefined") {
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") closeBag();
+    });
     document.addEventListener("click", function (e) {
       var q = e.target.closest("[data-qty]");
       if (q) {
@@ -445,6 +458,10 @@ function storageSet(key, val) {
     });
 
     document.addEventListener("DOMContentLoaded", function () {
+      var topBar = $(".top");
+      var syncTop = function () { if (topBar) topBar.classList.toggle("scrolled", window.scrollY > 40); };
+      window.addEventListener("scroll", syncTop, { passive: true });
+      syncTop();
       $$("[data-wa-link]").forEach(function (a) { a.href = waUrl(); a.target = "_blank"; a.rel = "noopener"; });
       $$("[data-wa-display]").forEach(function (el) { el.textContent = WA_DISPLAY; });
       $$("[data-wa-text]").forEach(function (a) { a.href = waUrl(a.getAttribute("data-wa-text")); a.target = "_blank"; a.rel = "noopener"; });
