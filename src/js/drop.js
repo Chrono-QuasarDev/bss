@@ -14,12 +14,12 @@
   function waUrl(text) { return "https://wa.me/" + WA_NUMBER + (text ? "?text=" + encodeURIComponent(text) : ""); }
 
   function show(id, on) { var el = $(id); if (el) el.hidden = !on; }
+  // Sets text only if the element exists, so a missing element can't stop the page.
+  function text(id, value) { var el = $(id); if (el) el.textContent = value; }
 
   function render(catalog) {
-    $("drop-title").textContent = catalog.name;
-    $("drop-sub").textContent = "Early access for paid buyers. Open until " + catalog.date + ".";
-    $("drop-ref").textContent = catalog.ref;
-    $("drop-date-note").textContent = "Goes public on " + catalog.date + ".";
+    text("drop-ref", catalog.ref);
+    text("drop-date-note", "Goes public on " + catalog.date + ".");
 
     $("drop-grid").innerHTML = catalog.products.map(function (p, i) {
       var colourOpts = p.colors.map(function (c) { return '<option value="' + esc(c.name) + '">' + esc(c.name) + '</option>'; }).join("");
@@ -94,7 +94,7 @@
         if (new Date(catalog.date + "T00:00:00Z") <= new Date()) return showClosed(catalog);
         render(catalog);
       })
-      .catch(function () { /* stay on the gate */ });
+      .catch(function () { showUnavailable(); });
   }
 
   function setupForm() {
