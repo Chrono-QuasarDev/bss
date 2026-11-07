@@ -1,4 +1,4 @@
-// B.S.S storefront behaviour: bag, product options, shop filters, cart, checkout, WhatsApp handoff.
+// B.S.S storefront behaviour: cart, product options, shop filters, cart page, checkout, WhatsApp handoff.
 // Customer-facing only.
 
 function getWindowStore() {
@@ -142,7 +142,7 @@ function storageSet(key, val) {
     if (found) found.qty += line.qty; else bag.push(line);
     writeBag(bag);
     openBag();
-    toast("Added to bag");
+    toast("Added to cart");
   }
   function changeQty(index, delta) {
     var bag = readBag();
@@ -164,7 +164,17 @@ function storageSet(key, val) {
 
   /* ---------- Drawer and toast ---------- */
   var lastFocus = null;
+  function syncBurger(open) {
+    var b = $("#burger");
+    if (!b) return;
+    b.classList.toggle("open", open);
+    b.setAttribute("aria-expanded", open ? "true" : "false");
+    b.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+  }
   function openBag() {
+    var menu = $("#mobile-menu");
+    if (menu) menu.classList.remove("open");
+    syncBurger(false);
     lastFocus = document.activeElement;
     var d = $("#bag"), s = $("#scrim");
     if (d) d.classList.add("open");
@@ -176,10 +186,36 @@ function storageSet(key, val) {
   }
   function closeBag() {
     var d = $("#bag"), s = $("#scrim");
+    var wasOpen = d && d.classList.contains("open");
     if (d) d.classList.remove("open");
-    if (s) s.classList.remove("open");
-    document.documentElement.style.overflow = "";
-    if (lastFocus && lastFocus.focus) lastFocus.focus();
+    var menu = $("#mobile-menu");
+    var menuOpen = menu && menu.classList.contains("open");
+    if (s && !menuOpen) s.classList.remove("open");
+    if (!menuOpen) document.documentElement.style.overflow = "";
+    if (wasOpen && lastFocus && lastFocus.focus) lastFocus.focus();
+  }
+  function openMenu() {
+    var bag = $("#bag");
+    if (bag) bag.classList.remove("open");
+    lastFocus = document.activeElement;
+    var d = $("#mobile-menu"), s = $("#scrim");
+    if (d) d.classList.add("open");
+    if (s) s.classList.add("open");
+    document.documentElement.style.overflow = "hidden";
+    syncBurger(true);
+    var closeBtn = d ? d.querySelector("[data-close-menu]") : null;
+    if (closeBtn) closeBtn.focus();
+  }
+  function closeMenu() {
+    var d = $("#mobile-menu"), s = $("#scrim");
+    var wasOpen = d && d.classList.contains("open");
+    if (d) d.classList.remove("open");
+    var bag = $("#bag");
+    var bagOpen = bag && bag.classList.contains("open");
+    if (s && !bagOpen) s.classList.remove("open");
+    if (!bagOpen) document.documentElement.style.overflow = "";
+    syncBurger(false);
+    if (wasOpen && lastFocus && lastFocus.focus) lastFocus.focus();
   }
   function toast(msg) {
     var t = $("#toast");
@@ -213,13 +249,13 @@ function storageSet(key, val) {
   function renderBag() {
     var bag = readBag();
     var count = bag.reduce(function (s, i) { return s + i.qty; }, 0);
-    $$("[data-bag-count]").forEach(function (el) { el.textContent = count ? "Bag (" + count + ")" : "Bag"; });
+    $$("[data-bag-count]").forEach(function (el) { el.textContent = count ? "Cart (" + count + ")" : "Cart"; });
 
     var list = $("#bag-items");
     if (list) {
       list.innerHTML = bag.length
         ? bag.map(function (item, i) { return lineHTML(item, i, true); }).join("")
-        : '<p class="empty">Your bag is empty. <a href="' + ROOT() + 'shop.html">Browse the shop</a>.</p>';
+        : '<p class="empty">Your cart is empty. <a href="' + ROOT() + 'shop.html">Browse the shop</a>.</p>';
       var total = $("#bag-total");
       if (total) total.textContent = cedi(bagTotal(bag));
       var cta = $("#bag-checkout");
@@ -230,7 +266,7 @@ function storageSet(key, val) {
     if (cartLines) {
       cartLines.innerHTML = bag.length
         ? bag.map(function (item, i) { return lineHTML(item, i, false); }).join("")
-        : '<div class="empty-state"><h2 class="h3">Your bag is empty</h2><p>Pick a piece from the shop and it will appear here.</p><a class="btn btn-primary" href="' + ROOT() + 'shop.html">Shop the drop</a></div>';
+        : '<div class="empty-state"><h2 class="h3">Your cart is empty</h2><p>Pick a piece from the shop and it will appear here.</p><a class="btn btn-primary" href="' + ROOT() + 'shop.html">Shop the drop</a></div>';
       var sub = $("#cart-subtotal");
       if (sub) sub.textContent = cedi(bagTotal(bag));
       var sub2 = $("#cart-subtotal2");
@@ -272,7 +308,7 @@ function storageSet(key, val) {
     if (!box) return;
     var bag = readBag();
     if (!bag.length) {
-      box.innerHTML = '<p class="empty">Your bag is empty. <a href="' + ROOT() + 'shop.html">Browse the shop</a>.</p>';
+      box.innerHTML = '<p class="empty">Your cart is empty. <a href="' + ROOT() + 'shop.html">Browse the shop</a>.</p>';
       var f = $("#checkout-form");
       if (f) f.style.display = "none";
       return;
@@ -367,7 +403,7 @@ function storageSet(key, val) {
       });
       $("#pdp-qty").textContent = qty;
       $("#pdp-add").disabled = !size;
-      $("#pdp-add-label").textContent = size ? "Add to bag" : "Choose a size";
+      $("#pdp-add-label").textContent = size ? "Add to cart" : "Choose a size";
       $("#pdp-line-total").textContent = cedi(p.price * qty);
     }
 
@@ -438,7 +474,7 @@ function storageSet(key, val) {
   /* ---------- Global wiring ---------- */
   if (typeof document !== "undefined") {
     document.addEventListener("keydown", function (e) {
-      if (e.key === "Escape") closeBag();
+      if (e.key === "Escape") { closeBag(); closeMenu(); }
     });
     document.addEventListener("click", function (e) {
       var q = e.target.closest("[data-qty]");
@@ -450,7 +486,11 @@ function storageSet(key, val) {
       var rm = e.target.closest("[data-remove]");
       if (rm) { removeLine(+rm.getAttribute("data-remove")); return; }
       if (e.target.closest("[data-open-bag]")) { e.preventDefault(); openBag(); return; }
-      if (e.target.closest("[data-close-bag]") || e.target.id === "scrim") { closeBag(); return; }
+      if (e.target.closest("[data-open-menu]")) { e.preventDefault(); var mm = $("#mobile-menu"); if (mm && mm.classList.contains("open")) closeMenu(); else openMenu(); return; }
+      if (e.target.closest("[data-close-menu]")) { closeMenu(); return; }
+      if (e.target.closest("#mobile-menu a")) { closeMenu(); return; }
+      if (e.target.closest("[data-close-bag]")) { closeBag(); return; }
+      if (e.target.id === "scrim") { closeBag(); closeMenu(); return; }
       if (e.target.closest("#bag-checkout")) {
         if (!readBag().length) return;
         location.href = ROOT() + "checkout.html";
@@ -466,6 +506,9 @@ function storageSet(key, val) {
       $$("[data-wa-display]").forEach(function (el) { el.textContent = WA_DISPLAY; });
       $$("[data-wa-text]").forEach(function (a) { a.href = waUrl(a.getAttribute("data-wa-text")); a.target = "_blank"; a.rel = "noopener"; });
       renderBag();
+      var wide = window.matchMedia("(min-width: 901px)");
+      var onWide = function (ev) { if (ev.matches) closeMenu(); };
+      if (wide.addEventListener) wide.addEventListener("change", onWide); else if (wide.addListener) wide.addListener(onWide);
       setupProduct();
       setupShop();
       setupCheckout();

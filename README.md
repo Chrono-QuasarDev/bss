@@ -1,6 +1,6 @@
 # B.S.S Storefront
 
-The online store for B.S.S, a screen-printing label in Accra that sells heavyweight tees and hoodies. Customers browse the shop, build a bag, and send their order on WhatsApp. Payment is arranged on WhatsApp by mobile money or bank transfer.
+The online store for B.S.S, a screen-printing label in Accra that sells heavyweight tees and hoodies. Customers browse the shop, build a cart, and send their order on WhatsApp. Payment is arranged on WhatsApp by mobile money or bank transfer.
 
 Early-access drops are paid on WhatsApp too. Buyers get a personal access code and unlock the drop on the site. The drop content is only ever sent by the server, after the code is checked.
 
@@ -27,7 +27,7 @@ bss/
 │   └── js/
 │       ├── products.js      Public catalog (no drop products)
 │       ├── art.js           SVG shirt and hoodie artwork
-│       ├── shared.js        Bag, product options, shop, checkout, WhatsApp handoff
+│       ├── shared.js        Cart, product options, shop, checkout, WhatsApp handoff
 │       └── drop.js          Early-access page (asks the server, holds no secrets)
 ├── functions/               Server code (Cloudflare Pages Functions)
 │   ├── _lib/access.mjs      Code signing and verification, cookie signing
@@ -59,7 +59,7 @@ bss/
 | Home | `index.html` |
 | Shop | `shop.html` (shows the early-access teaser while a drop is upcoming) |
 | Product | `product/<slug>.html` |
-| Bag and checkout | `cart.html`, `checkout.html`, `order-sent.html` |
+| Cart and checkout | `cart.html`, `checkout.html`, `order-sent.html` |
 | Early access | `drop.html` (not linked from the menu, noindex) |
 | Other | About, Journal, Size Guide, Delivery, Returns, FAQ, Contact, Track Order, Privacy, Terms, 404 |
 
@@ -175,5 +175,5 @@ Use the international format without `+` or a leading zero. `0206764888` becomes
 - Drop photos are not watermarked yet.
 - Early-access photos can be captured from the screen. The name on the unlocked page and the buyer reference discourage sharing.
 - The drop page reserves one item per click. Quantities are handled on WhatsApp.
-- The bag is per device. It does not sync across devices.
+- The cart is per device. It does not sync across devices.
 - Product photography is still illustrated artwork.

@@ -59,21 +59,8 @@ function header(root, active) {
     ${link("contact.html", "Contact", "contact")}
   </nav>
   <div class="top-right">
-    <details class="mnav">
-      <summary aria-label="Menu">Menu</summary>
-      <div class="mnav-panel">
-        <a href="${root}shop.html">Shop</a>
-        <a href="${root}journal.html">Journal</a>
-        <a href="${root}about.html">About</a>
-        <a href="${root}size-guide.html">Size Guide</a>
-        <a href="${root}delivery.html">Delivery</a>
-        <a href="${root}returns.html">Returns</a>
-        <a href="${root}faq.html">FAQ</a>
-        <a href="${root}track.html">Track Order</a>
-        <a href="${root}contact.html">Contact</a>
-      </div>
-    </details>
-    <a href="${root}cart.html" class="bag-btn" data-open-bag data-bag-count>Bag</a>
+    <button class="burger" id="burger" data-open-menu aria-expanded="false" aria-label="Open menu"><span></span><span></span><span></span></button>
+    <a href="${root}cart.html" class="cart-btn" data-open-bag data-bag-count>Cart</a>
   </div>
 </header>`;
 }
@@ -81,9 +68,9 @@ function header(root, active) {
 function drawer(root) {
   return `
 <div class="scrim" id="scrim" aria-hidden="true"></div>
-<aside class="drawer" id="bag" role="dialog" aria-modal="true" aria-label="Your bag">
+<aside class="drawer" id="bag" role="dialog" aria-modal="true" aria-label="Your cart">
   <header>
-    <h3>Your bag</h3>
+    <h3>Your cart</h3>
     <button data-close-bag aria-label="Close">✕</button>
   </header>
   <div class="items" id="bag-items"></div>
@@ -91,10 +78,35 @@ function drawer(root) {
     <div class="total"><span>Subtotal</span><span id="bag-total">GHS 0</span></div>
     <p class="note">Delivery is confirmed with you on WhatsApp before you pay.</p>
     <a class="btn btn-primary" id="bag-checkout" href="${root}checkout.html">Checkout</a>
-    <a class="btn btn-ghost" style="margin-top:10px" href="${root}cart.html">View full bag</a>
+    <a class="btn btn-ghost" style="margin-top:10px" href="${root}cart.html">View full cart</a>
   </footer>
 </aside>
 <div class="toast" id="toast" role="status"></div>`;
+}
+
+function menuDrawer(root) {
+  const link = (href, label) => `<a href="${root}${href}">${label}</a>`;
+  return `
+<aside class="drawer menu-drawer" id="mobile-menu" role="dialog" aria-modal="true" aria-label="Menu">
+  <header>
+    <h3>Menu</h3>
+    <button data-close-menu aria-label="Close menu">✕</button>
+  </header>
+  <nav class="menu-nav" aria-label="Menu">
+    ${link("shop.html", "Shop")}
+    ${link("journal.html", "Journal")}
+    ${link("about.html", "About")}
+    ${link("size-guide.html", "Size Guide")}
+    ${link("delivery.html", "Delivery")}
+    ${link("returns.html", "Returns")}
+    ${link("faq.html", "FAQ")}
+    ${link("track.html", "Track Order")}
+    ${link("contact.html", "Contact")}
+  </nav>
+  <div class="menu-foot">
+    <div class="menu-mark" aria-hidden="true">B.S.S</div>
+  </div>
+</aside>`;
 }
 
 function footer(root) {
@@ -135,18 +147,6 @@ function footer(root) {
 </footer>`;
 }
 
-const EXTRA_HEAD_CSS = `
-<style>
-.top-right { display: flex; align-items: center; gap: 12px; }
-.nav a.on { opacity: 1; text-decoration: underline; text-underline-offset: 6px; }
-.mnav { display: none; position: relative; }
-.mnav summary { list-style: none; cursor: pointer; font-size: 13px; text-transform: uppercase; letter-spacing: .14em; border: 1px solid currentColor; padding: 9px 14px; border-radius: 999px; }
-.mnav summary::-webkit-details-marker { display: none; }
-.mnav-panel { position: absolute; right: 0; top: 52px; background: var(--ink-2); border: 1px solid var(--line); padding: 10px; min-width: 200px; display: flex; flex-direction: column; }
-.mnav-panel a { padding: 12px 14px; font-size: 14px; }
-.mnav-panel a:hover { color: var(--signal); }
-@media (max-width: 900px) { .mnav { display: block; } }
-</style>`;
 
 function layout({
   title,
@@ -169,13 +169,13 @@ function layout({
   <link rel="stylesheet" href="${root}styles.css">
   <link rel="stylesheet" href="${root}pages.css">
   <link rel="preload" href="${root}assets/fonts/anton-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
-  ${EXTRA_HEAD_CSS}
   <script>window.BSS_ROOT = ${JSON.stringify(root)}; document.documentElement.classList.add("js");</script>
 </head>
 <body class="${bodyClass}">
 ${header(root, active)}
 ${body}
 ${drawer(root)}
+${menuDrawer(root)}
 ${footer(root)}
 <script src="${root}js/art.js"></script>
 <script src="${root}js/products.js"></script>
@@ -439,7 +439,7 @@ pages["cart.html"] = (root = "") => {
 <main class="cart-layout">
   <div>
     <div class="crumbs-line" style="margin-bottom:16px"><a href="${root}shop.html">Continue shopping</a></div>
-    <h1 class="h1" style="font-family:var(--display);font-size:clamp(48px,7vw,100px);line-height:1.06;letter-spacing:0.04em;text-transform:uppercase">Your bag</h1>
+    <h1 class="h1" style="font-family:var(--display);font-size:clamp(48px,7vw,100px);line-height:1.06;letter-spacing:0.04em;text-transform:uppercase">Your cart</h1>
     <p id="cart-count" class="muted" style="margin:14px 0 30px"></p>
     <div id="cart-lines"></div>
   </div>
@@ -452,14 +452,14 @@ pages["cart.html"] = (root = "") => {
     <p class="note">You won't be charged yet. We confirm your total and delivery fee on WhatsApp first.</p>
   </aside>
 </main>`;
-  return layout({ title: "Your bag · B.S.S", root, body, script: "" });
+  return layout({ title: "Your cart · B.S.S", root, body, script: "" });
 };
 
 pages["checkout.html"] = (root = "") => {
   const body = `
 <main class="checkout-layout">
   <div>
-    <div class="crumbs-line" style="margin-bottom:16px"><a href="${root}cart.html">Back to bag</a></div>
+    <div class="crumbs-line" style="margin-bottom:16px"><a href="${root}cart.html">Back to cart</a></div>
     <div class="checkout-form-head">
       <h1 style="font-family:var(--display);font-size:clamp(48px,7vw,100px);line-height:1.06;letter-spacing:0.04em;text-transform:uppercase">Checkout</h1>
       <p class="muted" style="margin-top:14px;max-width:520px">Tell us where to bring your pieces. We'll open WhatsApp with your order ready to send, and confirm the delivery fee with you there.</p>
@@ -601,7 +601,7 @@ ${pageHero("Contact", "Say hello", "The fastest way to reach us is WhatsApp. We 
   <div class="wrap faq-group">
     <h2 class="h3" style="margin-bottom:18px">Common questions</h2>
     <div class="faq">
-      <details><summary>How do I order?</summary><p>Add pieces to your bag, then checkout. Your order opens in WhatsApp, ready to send. We confirm the total and delivery fee before you pay.</p></details>
+      <details><summary>How do I order?</summary><p>Add pieces to your cart, then checkout. Your order opens in WhatsApp, ready to send. We confirm the total and delivery fee before you pay.</p></details>
       <details><summary>Can I pick up my order?</summary><p>Yes, by arrangement. Message us on WhatsApp to set a time.</p></details>
       <details><summary>Do you deliver outside Accra?</summary><p>Message us with your area on WhatsApp and we'll confirm whether we can deliver there and the fee.</p></details>
     </div>
@@ -791,7 +791,7 @@ ${pageHero("Legal", "Privacy", "How we handle the information you give us when y
   <h2>Your choices</h2>
   <p>You can ask us to see, correct or delete your information at any time by messaging us on WhatsApp.</p>
   <h2>Cookies</h2>
-  <p>We store your bag in your browser so it's still there when you come back. We don't use advertising cookies on this site.</p>
+  <p>We store your cart in your browser so it's still there when you come back. We don't use advertising cookies on this site.</p>
   <p class="legal-date">Last updated: November 2026.</p>
 </div></section>`;
   return layout({ title: "Privacy · B.S.S", root, body });
